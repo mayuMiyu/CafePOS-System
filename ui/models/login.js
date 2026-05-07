@@ -92,3 +92,91 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
         alert('Something went wrong. Please try again.');
     }
 });
+
+// Open register overlay
+document.querySelector('.form h5 a').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('registerOverlay').classList.add('active');
+});
+
+// Close register overlay
+document.getElementById('closeRegister').addEventListener('click', () => {
+    const card = document.getElementById('registerCard');
+    card.style.animation = 'slideDownFade 0.3s ease forwards';
+    
+    setTimeout(() => {
+        document.getElementById('registerOverlay').classList.remove('active');
+        card.style.animation = '';
+    }, 300);
+});
+
+// Send verification code
+document.getElementById('sendCodeBtn').addEventListener('click', async () => {
+    const email = document.getElementById('reg-email').value;
+
+    if (!email) return alert('Please enter your email first');
+
+    const btn = document.getElementById('sendCodeBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+        const res = await fetch('http://localhost:3000/api/send-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        if (data.success) {
+            let seconds = 60;
+            const interval = setInterval(() => {
+                btn.textContent = `Resend (${seconds}s)`;
+                seconds--;
+                if (seconds < 0) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.textContent = 'Send Code';
+                }
+            }, 1000);
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Send Code';
+        }
+    } catch (err) {
+        alert('Failed to send code');
+        btn.disabled = false;
+        btn.textContent = 'Send Code';
+    }
+});
+
+// Register
+document.getElementById('registerBtn').addEventListener('click', async () => {
+    const username = document.getElementById('reg-username').value;
+    const password = document.getElementById('reg-password').value;
+    const email = document.getElementById('reg-email').value;
+    const code = document.getElementById('reg-code').value;
+
+    if (!username || !password || !email || !code) {
+        return alert('Please fill in all fields');
+    }
+
+    try {
+        const res = await fetch('http://localhost:3000/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, email, code })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        if (data.success) {
+            document.getElementById('registerOverlay').classList.remove('active');
+        }
+    } catch (err) {
+        alert('Registration failed. Please try again.');
+    }
+});

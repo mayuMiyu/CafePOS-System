@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maku Cafe</title>
     <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -40,6 +41,46 @@
                 <h5> Don't have an account? <a href="#">Register</a> </h5>
 
                 </form> 
+            </div>
+
+            <!-- Registration Overlay -->
+            <div id="registerOverlay">
+                <div id="registerCard" class="form">
+                    <button class="back-btn" id="closeRegister">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <h1>Register</h1>
+
+                    <div class="input-group">
+                        <input type="text" id="reg-username" class="box" placeholder=" " autocomplete="off">
+                        <label>Username</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="reg-name" class="box" placeholder=" " autocomplete="off">
+                        <label>Name</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" id="reg-password" class="box" placeholder=" " autocomplete="off">
+                        <label>Password</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" id="reg-email" class="box" placeholder=" " autocomplete="off">
+                        <label>Email</label>
+                    </div>
+
+                    <div class="code-row">
+                        <div class="input-group code-input">
+                            <input type="text" id="reg-code" class="box" placeholder=" " autocomplete="off" maxlength="6">
+                            <label>Verification Code</label>
+                        </div>
+                        <button type="button" id="sendCodeBtn" class="send-code-btn">Send Code</button>
+                    </div>
+
+                    <button type="button" id="registerBtn" class="submit">Register</button>
+                </div>
             </div>
         </div>
     </main> 

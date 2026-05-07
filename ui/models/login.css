@@ -1,0 +1,209 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    width: 100%;
+    height: 100vh;
+}
+
+#scene {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+#donut-wrapper {
+    position: absolute;
+    top: 1%;
+    left: -10%;
+    width: 70%;
+    z-index: 2;
+}
+
+#donut {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#lefteye {
+    position: absolute;
+    top: 39%;
+    left: 66.5%;
+    width: 2.5%;
+    height: auto;
+    z-index: 3;
+    pointer-events: none;
+}
+
+#righteye {
+    position: absolute;
+    top: 39%;
+    left: 74%;
+    width: 2.5%;
+    height: auto;
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* LOGIN FORM CSS STARTS HERE */
+
+#LoginForm {
+    position: absolute;
+    left: 80%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    min-height: 450px;
+    height: auto;
+    width: 420px;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    padding-bottom: 20px 10px;
+}
+
+.form h1 {
+    color: white;
+    font-size: 1.7em;
+    font-family: 'Segoe UI', serif;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+    margin: 20px 0 20px;
+}
+
+.form h4 {
+    color: rgba(255, 255, 255, 0.673);
+    font-size: 0.850rem;
+    font-family: 'Segoe UI', serif;
+    margin: 20px 0 2px;
+    align-self: flex-end;
+    margin-right: 40px;
+    border-bottom: none;
+}
+
+.form h5 {
+    color: rgba(255, 255, 255, 0.673);
+    font-size: 0.850rem;
+    font-family: 'Segoe UI', serif;
+    margin: 10px 0 10px;
+    border-bottom: none;
+}
+
+.box {
+    padding: 8px 12px;
+    margin: 0;
+    width: 75%;
+    border: none;
+    outline: none;
+    border-radius: 18px;
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4);
+    color: white;
+    font-size: 0.875rem;
+    font-family: "Segoe UI", serif;
+}
+
+.submit {
+    padding: 12px;
+    margin: 25px 0 8px;
+    width: 83%;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 25px 45px rgba(255, 255, 255, 0.4);
+    color: white;
+    border: none;
+    outline: none;
+    border-radius: 20px;
+    transition: transform 0.2s ease;
+    font-family: 'Segoe UI', serif;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.submit:hover {
+    background-color: rgba(255, 255, 255, 0.689);
+    color: rgb(10, 10, 10);
+    transform: translateY(-4px);
+    font-size: 0.975rem;
+}
+
+::placeholder {
+    color: white;
+    opacity: 0.7;
+}
+
+.form h5 a {
+    color: #f0f0f0;
+    text-decoration: none;
+}
+
+.form h5 a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.form h4 a {
+    color: #f0f0f0;
+    text-decoration: none;
+}
+
+.form h4 a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.input-group {
+    position: relative;
+    width: 83%;
+    margin: 8px 0;
+}
+
+.input-group .box {
+    width: 100%;
+    padding: 17px 15px;
+    box-sizing: border-box;
+}
+
+.input-group label {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    font-family: "Segoe UI", serif;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.input-group .box:focus ~ label,
+.input-group .box:not(:placeholder-shown) ~ label {
+    top: 0px;
+    transform: translateY(-50%);
+    left: 18px;
+    font-size: 0.7rem;
+    color: white;
+    background-color: transparent;
+    padding: 0 4px;
+    border-radius: 4px;
+}

@@ -1,0 +1,64 @@
+const bcrypt = require('bcrypt');
+const db = require('../config/database');
+const { Resend } = require('resend');
+
+const resend = new Resend (process.env.RESEND_API_KEY);
+
+//temp store for verification codes
+const verificationCodes = new Map();
+
+const sendCode = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) return res.status (400).json ({ success: false, message: 'Email is required' });
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    verificationCodes.set(email, { code, expires: Date.now() + 10 * 60 * 1000 });
+
+    try {
+        await resend.emails.send({
+            from: 'Maku Cafe <onboarding@resend.dev>',
+            to: email,
+            subject: 'Your Maku Cafe Verification Code',
+            html: `<p>Your verification code is: <strong>${code}</strong>. It expires in 10 mins. </p>`
+        });
+
+        res.json ({ success: true, message: 'Code Sent!'});
+    } catch (err) {
+        console.log(err);
+        return res.status(400).json({ success: false, message: 'Failed to send email.'})
+    }
+};
+
+const register = async (req, res) => {
+    const { username, password, email, code } = req.body;
+
+    //Verify 
+    const record = verificationCodes.get(email);
+    if (!record) return res.status(400).json({ success: false, message: 'No Code Sent'});
+
+    if (Date.now() > record.expires) return res.status(400).json({ success: false, message: 'Code expired' });
+
+    if (record.code !== code) return res.status(400).json({ success: false, message: 'Invalid code' });
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.execute(
+            'INSERT INTO registrations (username, name, password, email) VALUES (?, ?, ?, ?)',
+            [username, name, hashedPassword, email]
+        );
+
+        verificationCodes.delete(email);
+        res.json({ success: true, message: 'Registered successfully!' });
+
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ success: false, message: 'Username or email already exists' });
+        }
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+module.exports = { sendCode, register };

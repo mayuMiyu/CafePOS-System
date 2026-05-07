@@ -30,8 +30,10 @@ const sendCode = async (req, res) => {
     }
 };
 
+//register
 const register = async (req, res) => {
-    const { username, password, email, code } = req.body;
+    console.log('req.body:', req.body);
+    const { username, name: fullName, password, email, code } = req.body;
 
     //Verify 
     const record = verificationCodes.get(email);
@@ -44,9 +46,28 @@ const register = async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        const [existingUsers] = await db.execute(
+            'SELECT id FROM users WHERE username = ? OR email = ?',
+            [username, email]
+        );
+
+        if (existingUsers.length > 0) {
+            return res.status(400).json({ success: false, message: 'Username or email already exists' });
+        }
+
+        // check registrations table too
+        const [existingReg] = await db.execute(
+            'SELECT id FROM registrations WHERE username = ? OR email = ?',
+            [username, email]
+        );
+
+        if (existingReg.length > 0) {
+            return res.status(400).json({ success: false, message: 'A registration request already exists for this username or email' });
+        }
+        
         await db.execute(
-            'INSERT INTO registrations (username, name, password, email) VALUES (?, ?, ?, ?)',
-            [username, name, hashedPassword, email]
+            'INSERT INTO registrations (username, name, password, email, role, status, submitted_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+            [username, fullName, hashedPassword, email, 'Cashier', 'Pending']
         );
 
         verificationCodes.delete(email);
@@ -61,4 +82,30 @@ const register = async (req, res) => {
     }
 };
 
-module.exports = { sendCode, register };
+//reset password
+const resetPassword = async (req, res) => {
+    const { email, code, newPassword } = req.body;
+
+    const record = verificationCodes.get(email);
+    if (!record) return res.status(400).json({ success: false, message: 'No code sent to this email' });
+    if (Date.now() > record.expires) return res.status(400).json({ success: false, message: 'Code expired' });
+    if (record.code !== code) return res.status(400).json({ success: false, message: 'Invalid code' });
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.execute(
+            'UPDATE users SET password = ? WHERE email = ?',
+            [hashedPassword, email]
+        );
+
+        verificationCodes.delete(email);
+        res.json({ success: true, message: 'Password reset successfully!' });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+module.exports = { sendCode, register, resetPassword };

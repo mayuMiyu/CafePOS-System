@@ -152,9 +152,10 @@ document.getElementById('sendCodeBtn').addEventListener('click', async () => {
     }
 });
 
-// Register
+// Register send data
 document.getElementById('registerBtn').addEventListener('click', async () => {
     const username = document.getElementById('reg-username').value;
+    const fullName = document.getElementById('reg-name').value;
     const password = document.getElementById('reg-password').value;
     const email = document.getElementById('reg-email').value;
     const code = document.getElementById('reg-code').value;
@@ -167,7 +168,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
         const res = await fetch('http://localhost:3000/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, email, code })
+            body: JSON.stringify({ username, name:fullName, password, email, code })
         });
 
         const data = await res.json();
@@ -178,5 +179,109 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
         }
     } catch (err) {
         alert('Registration failed. Please try again.');
+    }
+});
+
+// Open forgot
+document.querySelector('.form h4 a').addEventListener('click', (e) => {
+    e.preventDefault();
+    const loginContent = document.getElementById('LoginFormContent');
+    const forgotCard = document.getElementById('forgotCard');
+
+    loginContent.style.opacity = '0';
+    loginContent.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+        forgotCard.style.opacity = '1';
+        forgotCard.style.pointerEvents = 'all';
+    }, 400);
+});
+
+// Back to login
+document.getElementById('backToLoginFromForgot').addEventListener('click', (e) => {
+    e.preventDefault();
+    const loginContent = document.getElementById('LoginFormContent');
+    const forgotCard = document.getElementById('forgotCard');
+
+    forgotCard.style.opacity = '0';
+    forgotCard.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+        loginContent.style.opacity = '1';
+        loginContent.style.pointerEvents = 'all';
+    }, 400);
+});
+
+// Send code for forgot password
+document.getElementById('forgotSendCodeBtn').addEventListener('click', async () => {
+    const email = document.getElementById('forgot-email').value;
+    if (!email) return alert('Please enter your email first');
+
+    const btn = document.getElementById('forgotSendCodeBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+        const res = await fetch('http://localhost:3000/api/send-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        if (data.success) {
+            let seconds = 60;
+            const interval = setInterval(() => {
+                btn.textContent = `Resend (${seconds}s)`;
+                seconds--;
+                if (seconds < 0) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.textContent = 'Send Code';
+                }
+            }, 1000);
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Send Code';
+        }
+    } catch (err) {
+        alert('Failed to send code');
+        btn.disabled = false;
+        btn.textContent = 'Send Code';
+    }
+});
+
+// Reset password
+document.getElementById('resetPasswordBtn').addEventListener('click', async () => {
+    const email = document.getElementById('forgot-email').value;
+    const code = document.getElementById('forgot-code').value;
+    const newPassword = document.getElementById('forgot-newpassword').value;
+    const confirmPassword = document.getElementById('forgot-confirmpassword').value;
+
+    if (!email || !code || !newPassword || !confirmPassword) {
+        return alert('Please fill in all fields');
+    }
+
+    if (newPassword !== confirmPassword) {
+        return alert('Passwords do not match');
+    }
+
+    try {
+        const res = await fetch('http://localhost:3000/api/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, code, newPassword })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        if (data.success) {
+            document.getElementById('backToLoginFromForgot').click();
+        }
+    } catch (err) {
+        alert('Reset failed. Please try again.');
     }
 });

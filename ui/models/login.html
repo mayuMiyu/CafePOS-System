@@ -20,27 +20,57 @@
             </div>
 
             <div id = "LoginForm">
-                <form action = "" class = form>
-                <h1> Login </h1>
+                <div id="LoginFormContent" class="form">
+                    <h1> Login </h1>
 
-                <div class = "input-group">
-                    <input type = "text" name = "username" class = "box" placeholder = " " autocomplete="off">
-                    <label>Username</label>
+                    <div class = "input-group">
+                        <input type = "text" name = "username" class = "box" placeholder = " " autocomplete="off">
+                        <label>Username</label>
+                    </div>
+
+                    <div class = "input-group">
+                        <input type = "password" name = "password" class = "box" placeholder = " " autocomplete="off">
+                        <label>Password</label>
+                    </div>
+
+                    <h4><a href = "#" >Forgot Password?</a> </h4>
+
+                    <button type = "submit" value = "Login" class = "submit"> Login
+                    </button>
+
+                    <h5> Don't have an account? <a href="#">Register</a> </h5>
+                </div> 
+            </div>
+
+            <div id="forgotCard" class="form">
+                <h1>Reset Password</h1>
+
+                <div class="input-group">
+                    <input type="email" id="forgot-email" class="box" placeholder=" " autocomplete="off">
+                    <label>Email</label>
                 </div>
 
-                <div class = "input-group">
-                    <input type = "password" name = "password" class = "box" placeholder = " " autocomplete="off">
-                    <label>Password</label>
+                <div class="code-row">
+                    <div class="input-group code-input">
+                        <input type="text" id="forgot-code" class="box" placeholder=" " autocomplete="off" maxlength="6">
+                        <label>Verification Code</label>
+                    </div>
+                    <button type="button" id="forgotSendCodeBtn" class="send-code-btn">Send Code</button>
                 </div>
 
-                <h4><a href = "#" >Forgot Password?</a> </h4>
+                <div class="input-group">
+                    <input type="password" id="forgot-newpassword" class="box" placeholder=" " autocomplete="off">
+                    <label>New Password</label>
+                </div>
 
-                <button type = "submit" value = "Login" class = "submit"> Login
-                </button>
+                <div class="input-group">
+                    <input type="password" id="forgot-confirmpassword" class="box" placeholder=" " autocomplete="off">
+                    <label>Confirm Password</label>
+                </div>
 
-                <h5> Don't have an account? <a href="#">Register</a> </h5>
+                <button type="button" id="resetPasswordBtn" class="submit">Reset Password</button>
 
-                </form> 
+                <h5>Remembered it? Login <a href="#" id="backToLoginFromForgot">here</a></h5>
             </div>
 
             <!-- Registration Overlay -->

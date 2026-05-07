@@ -60,13 +60,17 @@ main {
 }
 
 /* LOGIN FORM CSS STARTS HERE */
-
 #LoginForm {
     position: absolute;
     left: 80%;
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 4;
+}
+
+#LoginFormContent {
+    transition: opacity 0.4s ease;
+    opacity: 1;
 }
 
 .form {
@@ -96,7 +100,7 @@ main {
     color: rgba(255, 255, 255, 0.673);
     font-size: 0.850rem;
     font-family: 'Segoe UI', serif;
-    margin: 20px 0 2px;
+    margin: 5px 0 2px;
     align-self: flex-end;
     margin-right: 40px;
     border-bottom: none;
@@ -106,7 +110,7 @@ main {
     color: rgba(255, 255, 255, 0.673);
     font-size: 0.850rem;
     font-family: 'Segoe UI', serif;
-    margin: 10px 0 10px;
+    margin: 0px 0 10px;
     border-bottom: none;
 }
 
@@ -126,7 +130,7 @@ main {
 
 .submit {
     padding: 12px;
-    margin: 25px 0 8px;
+    margin: 15px 0 20px;
     width: 83%;
     background-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 25px 45px rgba(255, 255, 255, 0.4);
@@ -136,7 +140,6 @@ main {
     border-radius: 20px;
     transition: transform 0.2s ease;
     font-family: 'Segoe UI', serif;
-    font-size: 0.875rem;
     cursor: pointer;
 }
 
@@ -144,7 +147,6 @@ main {
     background-color: rgba(255, 255, 255, 0.689);
     color: rgb(10, 10, 10);
     transform: translateY(-4px);
-    font-size: 0.975rem;
 }
 
 ::placeholder {
@@ -174,7 +176,7 @@ main {
 
 .input-group {
     position: relative;
-    width: 83%;
+    width: 85%;
     margin: 8px 0;
 }
 
@@ -206,4 +208,178 @@ main {
     background-color: transparent;
     padding: 0 4px;
     border-radius: 4px;
+}
+
+/*registrations overlay*/
+#registerOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    z-index: 10;
+    justify-content: center;
+    align-items: center;
+}
+
+#registerOverlay.active {
+    display: flex;
+}
+
+#registerCard {
+    position: relative;
+    width: 420px;
+}
+
+#registerCard .submit {
+    width: 85%;
+}
+
+#closeRegister {
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+#closeRegister:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.code-row {
+    display: flex;
+    align-items: center;
+    width: 85%;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.code-input {
+    position: relative;
+    width: 100%;
+    margin: 0;
+}
+
+.send-code-btn {
+    padding: 10px 12px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 18px;
+    color: white;
+    font-size: 0.7rem;
+    font-family: 'Segoe UI', serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+}
+
+.send-code-btn:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#registerOverlay.active #registerCard {
+    animation: slideUpFade 0.85s ease forwards;
+}
+
+.back-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background:transparent !important;
+    border: none !important;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1.5;
+    transition: color 0.85s ease;
+    box-shadow: none !important;
+}
+
+.backbtn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+@keyframes slideDownFade {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+}
+
+/*forgot overlay*/
+
+#forgotCard {
+    position: absolute;
+    left: 80%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    width: 420px;
+    height: 460px;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+#forgotCard.slide-in {
+    animation: loginSlideIn 0.4s ease forwards;
+}
+
+#forgotCard.slide-out {
+    animation: loginSlideOut 0.4s ease forwards;
+}
+
+#LoginForm.slide-out {
+    animation: loginSlideOut 0.4s ease forwards;
+}
+
+#LoginForm.slide-in {
+    animation: loginSlideIn 0.4s ease forwards;
+}
+
+@keyframes loginSlideOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 20px));
+    }
+}
+
+@keyframes loginSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 20px));
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
 }

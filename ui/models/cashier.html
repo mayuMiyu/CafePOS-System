@@ -39,11 +39,16 @@
     <main class="main">
       <header class="topbar">
         <div class="title">Cashier</div>
-        <div class = "search-wrap"> 
+        <div class = "topbar-actions">
+          <div class = "search-wrap"> 
             <img class = "search-icon" src = "../models/assets/icons8-search-30.png" alt = "Search">
             <input class="search" type="text" placeholder="Search items..." />
+          </div>
+          <div class = "clock-wrap" >
+            <img class = "clock-icon" src = "../models/assets/clock.svg" alt = ''>
+            <span id = "realtime-clock">--:--:-- --</span>
+          </div>
         </div>
-        
       </header>
 
       <section class="content">
@@ -94,23 +99,64 @@
         <aside class="side-panel">
           <div class="quick-panel-box">
             <p>Quick Actions</p>
-          <button type = 'button' id = "discount-button" class = 'discountbtn'> % Discount</button>
+
+            <div class="quick-actions-grid">
+              <button type="button" id="discount-button" class="quick-action discountbtn">
+                <img class = 'quick-action-img' src = "../models/assets/icons8-discount-48.png">
+                <span>Discount</span>
+              </button>
+
+              <button type="button" id="notes-button" class="quick-action notesbtn">
+                <img class="quick-action-img" src="../models/assets/icons8-note-48.svg" alt="">
+                <span>Notes</span>
+              </button>
+            </div>
           </div>
 
-          <div class="panel-box">
-            <h3>Current Order</h3>
-            <div class="fake-line"></div>
-            <div class="fake-line" style="width:75%"></div>
-            <div class="fake-line" style="width:85%"></div>
+
+
+          <div class="order-box">
+            <div class="order-header">
+              <h3>Current Order</h3>
+              <p>0 item(s)</p>
+            </div>
+
+            <div class="order-empty">
+              <p>No items in cart</p>
+              <span>Add items from menu</span>
+            </div>
+
+            <div class="order-summary">
+              <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>₱0.00</span>
+              </div>
+
+              <div class="summary-row">
+                <span>Tax (12%):</span>
+                <span>₱0.00</span>
+              </div>
+
+              <div class="summary-row total-row">
+                <span>Total:</span>
+                <span>₱0.00</span>
+              </div>
+            </div>
+
+            <div class="order-actions">
+              <div class="order-action-row">
+                <button type="button" class="order-action hold-btn">Hold</button>
+                <button type="button" class="order-action clear-btn">Clear</button>
+              </div>
+
+              <button type="button" class="checkout-btn">Checkout - ₱0.00</button>
+            </div>
           </div>
 
-          <div class="checkout">
-            <span>Total</span>
-            <span>₱0.00</span>
-          </div>
         </aside>
       </section>
     </main>
   </div>
+  <script src = "cashier.js"></script>
 </body>
 </html>

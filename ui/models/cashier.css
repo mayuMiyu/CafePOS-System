@@ -397,7 +397,7 @@ html, body{
 }
 
 .order-empty {
-  height: 200px;
+  height: 210px;
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -449,13 +449,18 @@ html, body{
 
 .order-action,
 .checkout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   height: 45px;
   border: none;
   border-radius: 8px;
   font-family: inherit;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 550;
   cursor: pointer;
+  transition: background-color 0.2s ease-in;
 }
 
 .hold-btn {
@@ -463,9 +468,31 @@ html, body{
   color: #020617;
 }
 
+.hold-btn-icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.hold-btn:hover {
+  background-color: #E2E5E9;
+}
+
 .clear-btn {
   background: #fee2e2;
   color: #dc2626;
+}
+
+.clear-btn-icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.clear-btn:hover {
+  background: #FFC4C7;
 }
 
 .checkout-btn {
@@ -473,6 +500,13 @@ html, body{
   background: #d1d5db;
   color: #fff;
   cursor: not-allowed;
+}
+
+.checkout-btn-icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 @media (max-width: 980px){

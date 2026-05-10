@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maku Cafe — Product Image Uploader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f9fb;
+      --white: #ffffff;
+      --border: #e9ecef;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #f59100;
+      --accent-light: #fff7e6;
+      --accent-dark: #e37600;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --shadow: 0 8px 24px rgba(0,0,0,.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
+
+    header {
+      max-width: 900px;
+      margin: 0 auto 36px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    header span {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .tag {
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .product-row {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s;
+    }
+
+    .product-row:hover {
+      border-color: #fcd34d;
+    }
+
+    .product-row.uploaded {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .product-row.error {
+      border-color: #fecaca;
+      background: #fff5f5;
+    }
+
+    .preview-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 1px solid #fde68a;
+    }
+
+    .preview-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .preview-wrap img.visible {
+      display: block;
+    }
+
+    .preview-placeholder {
+      font-size: 26px;
+    }
+
+    .product-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .product-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .file-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1.5px dashed #d1d5db;
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: 'Sora', sans-serif;
+    }
+
+    .file-label:hover {
+      border-color: var(--accent);
+      color: var(--accent-dark);
+      background: var(--accent-light);
+    }
+
+    .file-label input {
+      display: none;
+    }
+
+    .upload-btn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .upload-btn:hover { background: var(--accent-dark); }
+    .upload-btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .status {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      min-width: 80px;
+      text-align: right;
+    }
+
+    .status.success { color: var(--success); }
+    .status.error { color: var(--danger); }
+    .status.loading { color: var(--accent); }
+
+    .category-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 0 4px 4px;
+      margin-top: 8px;
+    }
+
+    .category-header:first-child { margin-top: 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Product Image Uploader</h1>
+    <span>Maku Cafe — assign images to each menu item</span>
+  </div>
+  <span class="tag">Admin Tool</span>
+</header>
+
+<div class="container" id="container">
+  <p style="color: var(--muted); font-size:14px;">Loading products...</p>
+</div>
+
+<script>
+const BASE = 'http://localhost:3000';
+
+const categoryNames = { 1: 'Coffee', 2: 'Food', 3: 'Dessert', 4: 'Beverage' };
+const categoryEmojis = { 1: '☕', 2: '🥗', 3: '🍰', 4: '🥤' };
+
+async function loadAndRender() {
+  const container = document.getElementById('container');
+
+  try {
+    const res = await fetch(`${BASE}/api/products`);
+    const data = await res.json();
+    if (!data.success) throw new Error('Failed to load');
+
+    const grouped = {};
+    data.products.forEach(p => {
+      if (!grouped[p.category_id]) grouped[p.category_id] = [];
+      grouped[p.category_id].push(p);
+    });
+
+    container.innerHTML = '';
+
+    Object.entries(grouped).forEach(([catId, items]) => {
+      const header = document.createElement('div');
+      header.className = 'category-header';
+      header.textContent = `${categoryEmojis[catId] || ''} ${categoryNames[catId] || 'Category ' + catId}`;
+      container.appendChild(header);
+
+      items.forEach(product => {
+        container.appendChild(buildRow(product));
+      });
+    });
+
+  } catch (err) {
+    container.innerHTML = `<p style="color:red">Failed to load products: ${err.message}</p>`;
+  }
+}
+
+function buildRow(product) {
+  const row = document.createElement('div');
+  row.className = 'product-row';
+  row.id = `row-${product.id}`;
+
+  const hasImage = !!product.image_url;
+
+  row.innerHTML = `
+    <div class="preview-wrap" id="preview-wrap-${product.id}">
+      <img id="preview-img-${product.id}" 
+           src="${hasImage ? BASE + product.image_url : ''}" 
+           alt=""
+           class="${hasImage ? 'visible' : ''}">
+      <span class="preview-placeholder" id="placeholder-${product.id}" 
+            style="${hasImage ? 'display:none' : ''}">${categoryEmojis[product.category_id] || '📦'}</span>
+    </div>
+
+    <div class="product-info">
+      <div class="product-name">${product.name}</div>
+      <div class="product-meta">ID: ${product.id} &nbsp;·&nbsp; ₱${Number(product.base_price).toLocaleString()}</div>
+    </div>
+
+    <label class="file-label" for="file-${product.id}">
+      📁 Choose Image
+      <input type="file" id="file-${product.id}" accept="image/*" onchange="previewFile(${product.id}, this)">
+    </label>
+
+    <button class="upload-btn" id="btn-${product.id}" onclick="uploadImage(${product.id})" disabled>
+      Upload
+    </button>
+
+    <span class="status" id="status-${product.id}">
+      ${hasImage ? '✓ Has image' : '—'}
+    </span>
+  `;
+
+  if (hasImage) row.classList.add('uploaded');
+  return row;
+}
+
+function previewFile(productId, input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const img = document.getElementById(`preview-img-${productId}`);
+  const placeholder = document.getElementById(`placeholder-${productId}`);
+  const btn = document.getElementById(`btn-${productId}`);
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    img.src = e.target.result;
+    img.classList.add('visible');
+    placeholder.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  btn.disabled = false;
+}
+
+async function uploadImage(productId) {
+  const input = document.getElementById(`file-${productId}`);
+  const btn = document.getElementById(`btn-${productId}`);
+  const status = document.getElementById(`status-${productId}`);
+  const row = document.getElementById(`row-${productId}`);
+
+  if (!input.files[0]) return;
+
+  btn.disabled = true;
+  status.textContent = 'Uploading...';
+  status.className = 'status loading';
+
+  const formData = new FormData();
+  formData.append('image', input.files[0]);
+
+  try {
+    const res = await fetch(`${BASE}/api/products/${productId}/image`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      status.textContent = '✓ Uploaded!';
+      status.className = 'status success';
+      row.classList.remove('error');
+      row.classList.add('uploaded');
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (err) {
+    status.textContent = '✗ Failed';
+    status.className = 'status error';
+    row.classList.add('error');
+    btn.disabled = false;
+  }
+}
+
+loadAndRender();
+</script>
+</body>
+</html>

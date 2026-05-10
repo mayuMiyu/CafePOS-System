@@ -1,0 +1,24 @@
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '../../ui/models/assets/products'));
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const name = `product_${Date.now()}${ext}`;
+        cb(null, name);
+    }
+});
+
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        allowed.includes(ext) ? cb(null, true) : cb(new Error('Images only'));
+    }
+});
+
+module.exports = upload;

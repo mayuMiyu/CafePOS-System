@@ -3,6 +3,7 @@ const session = require('express-session');
 const cors = require('cors');
 const path = require('path');
 const authRoutes = require('./routes/authRoutes');
+const productRoute = require ('./routes/productroute');
 require('dotenv').config();
 
 const app = express();
@@ -10,7 +11,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'ui/models')));
+app.use(express.static(path.join(__dirname, '../ui/models')));
+app.use('/assets', express.static(path.join(__dirname, '../ui/models/assets')));
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -19,9 +21,10 @@ app.use(session({
 }));
 
 app.use('/api', authRoutes);
+app.use('/api', productRoute);
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'ui/models/login.html'));
+    res.sendFile(path.join(__dirname, '../ui/models/login.html'));
 });
 
 app.listen(process.env.PORT || 3000, () => {

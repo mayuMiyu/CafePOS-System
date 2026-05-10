@@ -1,0 +1,15 @@
+const db = require('../config/database');
+
+const getProducts = async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id, category_id, name, description, base_price, image_url FROM products WHERE is_available = 1'
+        );
+        res.json({ success: true, products: rows });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+module.exports = { getProducts };

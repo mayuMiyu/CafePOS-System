@@ -234,17 +234,14 @@ html, body{
 }
 
 .center{
-  padding:24px;
-  overflow:hidden;
+  overflow:auto;
 }
 
 .section-card{
-  background:#fff;
+  background:#F8F9FB;
   border:1px solid var(--border);
-  border-radius:18px;
   padding:18px;
   height:100%;
-  box-shadow:var(--shadow);
 }
 
 .section-head{
@@ -507,6 +504,216 @@ html, body{
   height: 25px;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 24px;
+}
+
+#all-btn {
+  width: 105px;
+}
+
+#coffee-btn {
+  width: 168px;
+}
+
+#food-btn {
+  width: 157px;
+}
+
+#dessert-btn {
+  width: 175px;
+}
+
+#beverage-btn {
+  width: 188px;
+}
+
+.btn-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.category-all-btn {
+  height: 55px;
+  padding: 0 24px;
+  margin-top: 13px;
+  margin-left: 11px;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.category-btn {
+  height: 55px;
+  padding: 0 24px;
+  margin-top: 13px;
+  margin-left: 11px;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.category-all-btn,
+.category-btn {
+  border: 2px solid #d9dee5;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+  transition: background 0.1s ease-in, border 0.1s ease-in;
+}
+
+.all-btn-icon {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.category-all-btn:hover, .category-btn:hover {
+  border: 2px solid #FFD666;
+  box-shadow: 2px 1px 4px rgba(15, 23, 42, 0.05);
+  background: #FFF9E6;
+}
+
+.category-all-btn.active, .category-btn.active {
+  background: #F59100;
+  box-shadow: 2px 1px 4px rgba(15, 23, 42, 0.05);
+  color: #fff;
+}
+
+.badge {
+    background: #F0F0F5;
+    color: #6B7280;
+    border-radius: 999px;
+    margin-top: 2px;
+    margin-left: 7px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.category-all-btn.active .badge,
+.category-btn.active .badge {
+    background: #E37600;
+    color: #fff;
+}
+
+.items-count {
+  margin: 26px 10px 22px;
+  color: #334155;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 30px;
+  padding-bottom: 32px;
+}
+
+.product-card {
+  min-height: 350px;
+  padding: 30px;
+  border: 1px solid #dfe3e8;
+  border-radius: 14px;
+  background: #fff;
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+
+.product-card:hover {
+  border-color: #e5e7eb;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+  transform: translateY(-2px);
+}
+
+.product-image-wrap {
+  height: 125px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #fff7c7, #ffe78a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  overflow:hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-info h3 {
+  color: #020617;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.product-info p {
+  color: #475569;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+  min-height: 40px;
+  font-weight: 550;
+}
+
+.product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.product-price {
+  color: #e66a00;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.add-product-btn {
+  width: 42px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.add-product-btn img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 @media (max-width: 980px){

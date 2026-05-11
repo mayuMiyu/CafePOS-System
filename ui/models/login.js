@@ -69,7 +69,7 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
     const password = document.querySelector('input[name="password"]').value;
 
     try {
-        const res = await fetch('http://localhost:3000/api/login', {
+        const res = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -121,7 +121,7 @@ document.getElementById('sendCodeBtn').addEventListener('click', async () => {
     btn.textContent = 'Sending...';
 
     try {
-        const res = await fetch('http://localhost:3000/api/send-code', {
+        const res = await fetch('/api/send-code', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -165,7 +165,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/api/register', {
+        const res = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, name:fullName, password, email, code })
@@ -222,7 +222,7 @@ document.getElementById('forgotSendCodeBtn').addEventListener('click', async () 
     btn.textContent = 'Sending...';
 
     try {
-        const res = await fetch('http://localhost:3000/api/send-code', {
+        const res = await fetch('/api/send-code', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -269,7 +269,7 @@ document.getElementById('resetPasswordBtn').addEventListener('click', async () =
     }
 
     try {
-        const res = await fetch('http://localhost:3000/api/reset-password', {
+        const res = await fetch('/api/reset-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, code, newPassword })

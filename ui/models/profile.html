@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maku Cafe Profile</title>
+  <link rel="stylesheet" href="profile.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/assets/maku icon.png" alt="Maku Cafe Logo">
+      </div>
+
+      <div class="nav">
+        <button class="nav-item" type="button" onclick="window.location.href='/cashier.html'">
+          <img src="/assets/icons8-order-24.png" alt="">
+          <span>Orders</span>
+        </button>
+
+        <button class="nav-item active" type="button">
+          <img src="/assets/profile icon.png" alt="">
+          <span>Profile</span>
+        </button>
+
+        <button class="nav-item" type="button">
+          <img src="/assets/icons8-logout-32.png" alt="">
+          <span>Logout</span>
+        </button>
+      </div>
+
+      <div class="profile-mini">
+        <div class="avatar" id="profile-avatar">JD</div>
+        <div class="profile-name" id="profile-name">John</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="title">Profile</div>
+        <div class="topbar-actions">
+          <div class="clock-wrap">
+            <img class="clock-icon" src="/assets/clock.svg" alt="">
+            <span id="realtime-clock">--:--:-- --</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="profile-content">
+        <div class="stat-grid">
+          <article class="stat-card">
+            <p>Total Transactions</p>
+            <strong id="stat-transactions">0</strong>
+          </article>
+          <article class="stat-card">
+            <p>Total Time</p>
+            <strong id="stat-total-time">0m</strong>
+          </article>
+          <article class="stat-card">
+            <p>Session Time</p>
+            <strong id="stat-session-time">0m</strong>
+          </article>
+          <article class="stat-card">
+            <p>Session Revenue</p>
+            <strong class="money" id="stat-session-revenue">&#8369;0.00</strong>
+          </article>
+        </div>
+
+        <section class="history-panel">
+          <div class="history-header">
+            <h2>Transaction History</h2>
+          </div>
+
+          <div class="history-list" id="history-list">
+            <div class="history-empty">
+              <img src="/assets/icons8-activity-history-100.png" alt="">
+              <p>No transactions yet</p>
+              <span>Completed transactions will appear here</span>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="profile.js"></script>
+</body>
+</html>

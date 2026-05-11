@@ -3,7 +3,25 @@ const db = require('../config/database');
 const getProducts = async (req, res) => {
     try {
         const [rows] = await db.execute(
-            'SELECT id, category_id, name, description, base_price, image_url FROM products WHERE is_available = 1'
+            `SELECT
+                p.id,
+                p.category_id,
+                p.name,
+                p.description,
+                p.base_price,
+                p.image_url,
+                EXISTS (
+                    SELECT 1
+                    FROM product_sizes ps
+                    WHERE ps.product_id = p.id
+                ) OR EXISTS (
+                    SELECT 1
+                    FROM product_addons pa
+                    WHERE pa.product_id = p.id
+                        AND pa.is_available = 1
+                ) AS has_options
+            FROM products p
+            WHERE p.is_available = 1`
         );
         res.json({ success: true, products: rows });
     } catch (err) {
@@ -12,4 +30,38 @@ const getProducts = async (req, res) => {
     }
 };
 
-module.exports = { getProducts };
+const getProductOptions = async (req, res) => {
+    const productId = Number(req.params.id);
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid product id' });
+    }
+
+    try {
+        const [[product]] = await db.execute(
+            'SELECT id FROM products WHERE id = ? AND is_available = 1',
+            [productId]
+        );
+
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        const [sizes] = await db.execute(
+            'SELECT id, label, price FROM product_sizes WHERE product_id = ? ORDER BY price ASC',
+            [productId]
+        );
+
+        const [addons] = await db.execute(
+            'SELECT id, name, extra_price FROM product_addons WHERE product_id = ? AND is_available = 1 ORDER BY name ASC',
+            [productId]
+        );
+
+        res.json({ success: true, sizes, addons });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+module.exports = { getProducts, getProductOptions };

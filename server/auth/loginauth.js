@@ -18,11 +18,17 @@ const login = async (req, res) => {
             return res.status (401).json ({ success: false, message: 'Invalid username or Password' });
         }
 
+        const [sessionResult] = await db.execute(
+            'INSERT INTO user_sessions (user_id, logged_in_at) VALUES (?, NOW())',
+            [user.id]
+        );
+
         req.session.user = {
             id: user.id,
             username: user.username,
             name: user.name,
-            role: user.role
+            role: user.role,
+            sessionId: sessionResult.insertId
         };
 
         res.json({ success: true, role: user.role })

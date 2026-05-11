@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getProducts } = require('../controller/productController');
+const { getProducts, getProductOptions } = require('../controller/productController');
 
 router.get('/products', getProducts);
+router.get('/products/:id/options', getProductOptions);
 
 const upload = require('../controller/uploadController');
 const db = require('../config/database');

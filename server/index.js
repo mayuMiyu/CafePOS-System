@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const productRoute = require ('./routes/productroute');
+const orderRoutes = require('./routes/orderroutes');
 require('dotenv').config();
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(session({
 
 app.use('/api', authRoutes);
 app.use('/api', productRoute);
+app.use('/api', orderRoutes);
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../ui/models/login.html'));

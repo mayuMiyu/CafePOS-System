@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maku Cafe Manager</title>
+  <link rel="stylesheet" href="manager.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/assets/maku icon.png" alt="Maku Cafe Logo">
+      </div>
+
+      <div class="nav">
+        <button class="nav-item active" type="button" data-panel="manager">
+          <span class="nav-symbol">&#9638;</span>
+          <span>Manager</span>
+        </button>
+
+        <button class="nav-item" type="button" data-panel="transactions">
+          <img src="/assets/icons8-activity-history-100.png" alt="">
+          <span>Transactions</span>
+        </button>
+
+        <button class="nav-item" type="button" data-panel="staff">
+          <img src="/assets/profile icon.png" alt="">
+          <span>Staff Profiles</span>
+        </button>
+      </div>
+
+      <button class="logout-nav" type="button">
+        <img src="/assets/icons8-logout-32.png" alt="">
+        <span>Logout</span>
+      </button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">Manager Dashboard</h1>
+          <p id="page-subtitle">Welcome back! Here's what's happening today.</p>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="date-button" type="button">
+            <span>&#9635;</span>
+            <span id="current-date">May 12, 2026</span>
+          </button>
+          <button class="export-button" type="button">
+            <span>&#8681;</span>
+            <span>Export Report</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="manager-content">
+        <section class="panel-section active" id="panel-manager">
+          <div class="section-title">
+            <span class="section-icon">&#9635;</span>
+            <h2>Daily Report</h2>
+          </div>
+
+          <div class="daily-grid">
+            <article class="daily-card">
+              <div class="daily-card-top">
+                <span class="daily-icon blue">&#8599;</span>
+                <span class="daily-pill blue">+12%</span>
+              </div>
+              <p>Transactions Made</p>
+              <strong id="daily-transactions">0</strong>
+              <small id="daily-transactions-comparison">No change vs yesterday</small>
+            </article>
+
+            <article class="daily-card">
+              <div class="daily-card-top">
+                <span class="daily-icon green">&#36;</span>
+                <span class="daily-pill green">+8%</span>
+              </div>
+              <p>Daily Revenue</p>
+              <strong id="daily-revenue">&#8369;0</strong>
+              <small id="daily-revenue-comparison">No change vs yesterday</small>
+            </article>
+
+            <article class="daily-card">
+              <div class="daily-card-top">
+                <span class="daily-icon orange">&#8634;</span>
+                <span class="daily-pill orange">-3</span>
+              </div>
+              <p>Orders Refunded</p>
+              <strong id="daily-refunded">0</strong>
+              <small id="daily-refunded-comparison">No change vs yesterday</small>
+            </article>
+
+            <article class="daily-card">
+              <div class="daily-card-top">
+                <span class="daily-icon red">&#8855;</span>
+                <span class="daily-pill red">-1</span>
+              </div>
+              <p>Orders Voided</p>
+              <strong id="daily-voided">0</strong>
+              <small id="daily-voided-comparison">No change vs yesterday</small>
+            </article>
+
+            <article class="daily-card">
+              <div class="daily-card-top">
+                <span class="daily-icon purple">&#9716;</span>
+                <span class="daily-pill purple" id="daily-staff-count">0 staff</span>
+              </div>
+              <p>Hours Clocked-In</p>
+              <strong id="daily-hours">0h</strong>
+              <small id="daily-hours-comparison">No change vs yesterday</small>
+            </article>
+          </div>
+
+          <section class="email-report">
+            <h3><span>&#9993;</span> Email Daily Report</h3>
+            <p>Send today's report summary to your email address</p>
+            <div class="email-row">
+              <div class="email-input-wrap">
+                <span>&#9993;</span>
+                <input type="email" placeholder="manager@coffeeshop.com">
+              </div>
+              <button type="button">&#10148; Send Report</button>
+            </div>
+          </section>
+
+          <section class="registrations-section">
+            <div class="registrations-title">
+              <h2><span>&#8853;</span> Account Registrations</h2>
+              <button type="button">View All &#8250;</button>
+            </div>
+
+            <div class="registrations-table">
+              <div class="registration-row registration-head">
+                <span>Username</span>
+                <span>Name</span>
+                <span>Gmail</span>
+                <span>Role</span>
+                <span>Submitted At</span>
+                <span>Actions</span>
+              </div>
+              <div id="registrations-body"></div>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel-section" id="panel-transactions">
+          <section class="metrics-section">
+            <div class="section-title">
+              <span class="section-icon">&#9637;</span>
+              <h2>Transactions</h2>
+            </div>
+
+            <div class="metric-grid">
+              <article class="metric-card">
+                <p>Total Transactions</p>
+                <strong id="metric-total-transactions">0</strong>
+              </article>
+              <article class="metric-card">
+                <p>Total Revenue</p>
+                <strong class="revenue" id="metric-total-revenue">&#8369;0.00</strong>
+              </article>
+              <article class="metric-card">
+                <p>Items Sold</p>
+                <strong class="items" id="metric-items-sold">0</strong>
+              </article>
+              <article class="metric-card">
+                <p>Avg Transaction</p>
+                <strong class="average" id="metric-avg-transaction">&#8369;0.00</strong>
+              </article>
+            </div>
+          </section>
+
+          <section class="audit-panel">
+            <div class="audit-header">
+              <div>
+                <h2>Audit Log</h2>
+                <p>Staff activity and system events</p>
+              </div>
+            </div>
+
+            <div class="audit-table">
+              <div class="audit-row audit-head">
+                <span>Username</span>
+                <span>Action</span>
+                <span>Details</span>
+                <span>Date &amp; Time</span>
+              </div>
+
+              <div id="audit-body">
+                <div class="audit-empty">
+                  <img src="/assets/icons8-activity-history-100.png" alt="">
+                  <p>No audit events yet</p>
+                  <span>Staff and transaction activity will appear here</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel-section" id="panel-staff">
+          <div class="placeholder-panel">
+            <h2>Staff Profiles</h2>
+            <p>Staff profile management will be added here.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="manager.js"></script>
+</body>
+</html>

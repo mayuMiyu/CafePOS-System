@@ -14,6 +14,18 @@ const requireManager = (req, res) => {
     return req.session.user;
 };
 
+const fetchPendingRegistrations = async (executor = db) => {
+    const [registrations] = await executor.execute(
+        `SELECT id, username, name, email, role, status, submitted_at
+         FROM registrations
+         WHERE status = 'Pending'
+         ORDER BY submitted_at DESC
+         LIMIT 10`
+    );
+
+    return registrations;
+};
+
 const getManagerDashboard = async (req, res) => {
     const manager = requireManager(req, res);
     if (!manager) return;
@@ -120,8 +132,8 @@ const getManagerDashboard = async (req, res) => {
 
         const [[dailyReport]] = await db.execute(
             `SELECT
-                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS transactions_made,
-                SUM(CASE WHEN DATE(created_at) = CURDATE() - INTERVAL 1 DAY THEN 1 ELSE 0 END) AS transactions_made_yesterday,
+                SUM(CASE WHEN status = 'completed' AND DATE(completed_at) = CURDATE() THEN 1 ELSE 0 END) AS transactions_made,
+                SUM(CASE WHEN status = 'completed' AND DATE(completed_at) = CURDATE() - INTERVAL 1 DAY THEN 1 ELSE 0 END) AS transactions_made_yesterday,
                 COALESCE(SUM(CASE WHEN status = 'completed' AND DATE(completed_at) = CURDATE() THEN total ELSE 0 END), 0) AS daily_revenue,
                 COALESCE(SUM(CASE WHEN status = 'completed' AND DATE(completed_at) = CURDATE() - INTERVAL 1 DAY THEN total ELSE 0 END), 0) AS daily_revenue_yesterday,
                 SUM(CASE WHEN status = 'refunded' AND DATE(refunded_at) = CURDATE() THEN 1 ELSE 0 END) AS orders_refunded,
@@ -157,13 +169,7 @@ const getManagerDashboard = async (req, res) => {
              WHERE DATE(logged_in_at) IN (CURDATE(), CURDATE() - INTERVAL 1 DAY)`
         );
 
-        const [registrations] = await db.execute(
-            `SELECT id, username, name, email, role, status, submitted_at
-             FROM registrations
-             WHERE status = 'Pending'
-             ORDER BY submitted_at DESC
-             LIMIT 10`
-        );
+        const registrations = await fetchPendingRegistrations();
 
         res.json({
             success: true,
@@ -205,4 +211,123 @@ const getManagerDashboard = async (req, res) => {
     }
 };
 
-module.exports = { getManagerDashboard };
+const getRegistrations = async (req, res) => {
+    const manager = requireManager(req, res);
+    if (!manager) return;
+
+    try {
+        const registrations = await fetchPendingRegistrations();
+        res.json({ success: true, registrations });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to load registrations' });
+    }
+};
+
+const acceptRegistration = async (req, res) => {
+    const manager = requireManager(req, res);
+    if (!manager) return;
+
+    const registrationId = Number(req.params.id);
+    if (!Number.isInteger(registrationId) || registrationId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid registration id' });
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const [[registration]] = await connection.execute(
+            `SELECT id, username, name, password, email, role
+             FROM registrations
+             WHERE id = ? AND status = 'Pending'
+             FOR UPDATE`,
+            [registrationId]
+        );
+
+        if (!registration) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: 'Pending registration not found' });
+        }
+
+        const [existingUsers] = await connection.execute(
+            `SELECT id
+             FROM users
+             WHERE username = ? OR email = ?
+             LIMIT 1`,
+            [registration.username, registration.email]
+        );
+
+        if (existingUsers.length > 0) {
+            await connection.rollback();
+            return res.status(409).json({ success: false, message: 'Username or email already exists in users' });
+        }
+
+        await connection.execute(
+            `INSERT INTO users (username, name, password, email, role, created_at)
+             VALUES (?, ?, ?, ?, ?, NOW())`,
+            [
+                registration.username,
+                registration.name,
+                registration.password,
+                registration.email,
+                registration.role
+            ]
+        );
+
+        await connection.execute(
+            `DELETE FROM registrations
+             WHERE id = ?`,
+            [registrationId]
+        );
+
+        await connection.commit();
+        res.json({ success: true, message: 'Registration accepted' });
+    } catch (err) {
+        await connection.rollback();
+        console.error(err);
+
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ success: false, message: 'Username or email already exists' });
+        }
+
+        res.status(500).json({ success: false, message: 'Failed to accept registration' });
+    } finally {
+        connection.release();
+    }
+};
+
+const rejectRegistration = async (req, res) => {
+    const manager = requireManager(req, res);
+    if (!manager) return;
+
+    const registrationId = Number(req.params.id);
+    if (!Number.isInteger(registrationId) || registrationId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid registration id' });
+    }
+
+    try {
+        const [result] = await db.execute(
+            `DELETE FROM registrations
+             WHERE id = ? AND status = 'Pending'`,
+            [registrationId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Pending registration not found' });
+        }
+
+        res.json({ success: true, message: 'Registration deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to delete registration' });
+    }
+};
+
+module.exports = {
+    getManagerDashboard,
+    getRegistrations,
+    acceptRegistration,
+    rejectRegistration
+};

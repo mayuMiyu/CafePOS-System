@@ -79,37 +79,43 @@ html, body{
 }
 
 .nav-item{
-  width:64px;
-  height:64px;
-  border-radius:14px;
+  width:82px;
+  height:82px;
+  border-radius:12px;
   border:none;
   background:transparent;
-  color:var(--muted);
+  color:#334155;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:6px;
+  gap:8px;
   cursor:pointer;
   font-size:12px;
-  font-weight:600;
+  font-weight:650;
+  transition: background-color .18s ease, color .18s ease;
 }
 
 .nav-item.active{
-  background:#f1f5f9;
-  color:var(--text);
+  background:#fff2bd;
+  color:#e66a00;
 }
 
 .nav-item img {
-  width:30px;
-  height:30px;
+  width:28px;
+  height:28px;
   object-fit:contain;
   flex-shrink:0;
+  transition: filter .18s ease;
+}
+
+.nav-item.active img {
+  filter: brightness(0) saturate(100%) invert(43%) sepia(96%) saturate(2196%) hue-rotate(9deg) brightness(99%) contrast(101%);
 }
 
 .nav-item span {
   font-size:12px;
-  font-weight:600;
+  font-weight:650;
   line-height:1;
 }
 

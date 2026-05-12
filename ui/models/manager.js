@@ -8,6 +8,7 @@ const pageTitle = document.getElementById('page-title');
 const pageSubtitle = document.getElementById('page-subtitle');
 const registrationsBody = document.getElementById('registrations-body');
 const navItems = document.querySelectorAll('.nav-item[data-panel]');
+const logoutButton = document.querySelector('.logout-nav');
 
 const panelCopy = {
     manager: {
@@ -45,6 +46,12 @@ function formatCountComparison(today, yesterday) {
     return `${difference > 0 ? '+' : ''}${difference.toLocaleString('en-PH')} vs yesterday`;
 }
 
+function formatCountDelta(today, yesterday) {
+    const difference = Number(today || 0) - Number(yesterday || 0);
+    if (difference === 0) return '0';
+    return `${difference > 0 ? '+' : ''}${difference.toLocaleString('en-PH')}`;
+}
+
 function formatMoneyComparison(today, yesterday) {
     const difference = Number(today || 0) - Number(yesterday || 0);
 
@@ -52,11 +59,23 @@ function formatMoneyComparison(today, yesterday) {
     return `${difference > 0 ? '+' : '-'}${formatPeso(Math.abs(difference))} vs yesterday`;
 }
 
+function formatMoneyDelta(today, yesterday) {
+    const difference = Number(today || 0) - Number(yesterday || 0);
+    if (difference === 0) return formatPesoWhole(0);
+    return `${difference > 0 ? '+' : '-'}${formatPesoWhole(Math.abs(difference))}`;
+}
+
 function formatHoursComparison(today, yesterday) {
     const difference = Number(today || 0) - Number(yesterday || 0);
 
     if (difference === 0) return 'No change vs yesterday';
     return `${difference > 0 ? '+' : '-'}${Math.abs(difference).toFixed(1)}h vs yesterday`;
+}
+
+function formatHoursDelta(today, yesterday) {
+    const difference = Number(today || 0) - Number(yesterday || 0);
+    if (difference === 0) return '0h';
+    return `${difference > 0 ? '+' : '-'}${Math.abs(difference).toFixed(1)}h`;
 }
 
 function escapeHtml(value) {
@@ -152,29 +171,70 @@ async function loadManagerDashboard() {
     }
 }
 
+async function loadRegistrations() {
+    try {
+        const res = await fetch('/api/manager/registrations');
+        const data = await res.json();
+
+        if (!data.success) {
+            registrationsBody.innerHTML = `
+                <div class="registration-empty">
+                    <p>${escapeHtml(data.message || 'Failed to load registrations')}</p>
+                </div>
+            `;
+            return;
+        }
+
+        renderRegistrations(data.registrations);
+    } catch (err) {
+        console.error('Failed to load registrations:', err);
+        registrationsBody.innerHTML = `
+            <div class="registration-empty">
+                <p>Failed to load registrations</p>
+            </div>
+        `;
+    }
+}
+
 function renderDailyReport(report) {
     const hours = Number(report?.hoursClocked || 0);
     const staffCount = Number(report?.staffCount || 0);
 
     document.getElementById('daily-transactions').textContent = Number(report?.transactionsMade || 0).toLocaleString('en-PH');
+    document.getElementById('daily-transactions-pill').textContent = formatCountDelta(
+        report?.transactionsMade,
+        report?.transactionsMadeYesterday
+    );
     document.getElementById('daily-transactions-comparison').textContent = formatCountComparison(
         report?.transactionsMade,
         report?.transactionsMadeYesterday
     );
 
     document.getElementById('daily-revenue').textContent = formatPesoWhole(report?.dailyRevenue || 0);
+    document.getElementById('daily-revenue-pill').textContent = formatMoneyDelta(
+        report?.dailyRevenue,
+        report?.dailyRevenueYesterday
+    );
     document.getElementById('daily-revenue-comparison').textContent = formatMoneyComparison(
         report?.dailyRevenue,
         report?.dailyRevenueYesterday
     );
 
     document.getElementById('daily-refunded').textContent = Number(report?.ordersRefunded || 0).toLocaleString('en-PH');
+    document.getElementById('daily-refunded-pill').textContent = formatCountDelta(
+        report?.ordersRefunded,
+        report?.ordersRefundedYesterday
+    );
     document.getElementById('daily-refunded-comparison').textContent = formatCountComparison(
         report?.ordersRefunded,
         report?.ordersRefundedYesterday
     );
 
     document.getElementById('daily-voided').textContent = Number(report?.ordersVoided || 0).toLocaleString('en-PH');
+    document.getElementById('daily-voided-pill').textContent = formatCountDelta(
+        report?.ordersVoided,
+        report?.ordersVoidedYesterday
+    );
     document.getElementById('daily-voided-comparison').textContent = formatCountComparison(
         report?.ordersVoided,
         report?.ordersVoidedYesterday
@@ -264,8 +324,8 @@ function renderRegistrations(registrations) {
                     <span class="role-pill">${escapeHtml(registration.role)}</span>
                     <span class="registration-date">${submitted.date}<span>${submitted.time}</span></span>
                     <span class="registration-actions">
-                        <span>&times;</span>
-                        <span>&check;</span>
+                        <button class="registration-action reject" type="button" data-registration-action="reject" data-registration-id="${registration.id}" aria-label="Delete ${escapeHtml(registration.username)} registration">&times;</button>
+                        <button class="registration-action accept" type="button" data-registration-action="accept" data-registration-id="${registration.id}" aria-label="Accept ${escapeHtml(registration.username)} registration">&check;</button>
                     </span>
                 </div>
             `;
@@ -275,6 +335,33 @@ function renderRegistrations(registrations) {
             <span>Review and approve to add to Staff Profiles</span>
         </div>
     `;
+}
+
+async function handleRegistrationAction(action, registrationId) {
+    if (action === 'reject' && !confirm('Delete this registration permanently?')) {
+        return;
+    }
+
+    const endpoint = action === 'accept'
+        ? `/api/manager/registrations/${registrationId}/accept`
+        : `/api/manager/registrations/${registrationId}`;
+
+    const method = action === 'accept' ? 'POST' : 'DELETE';
+
+    try {
+        const res = await fetch(endpoint, { method });
+        const data = await res.json();
+
+        if (!data.success) {
+            alert(data.message || 'Registration action failed');
+            return;
+        }
+
+        await loadRegistrations();
+    } catch (err) {
+        console.error('Registration action failed:', err);
+        alert('Registration action failed');
+    }
 }
 
 function switchPanel(panelName) {
@@ -296,5 +383,28 @@ navItems.forEach(item => {
     });
 });
 
+async function logout() {
+    try {
+        await fetch('/api/logout', { method: 'POST' });
+    } catch (err) {
+        console.error('Logout failed:', err);
+    } finally {
+        window.location.href = '/';
+    }
+}
+
+logoutButton?.addEventListener('click', logout);
+
+registrationsBody.addEventListener('click', event => {
+    const actionButton = event.target.closest('[data-registration-action]');
+    if (!actionButton) return;
+
+    handleRegistrationAction(
+        actionButton.dataset.registrationAction,
+        actionButton.dataset.registrationId
+    );
+});
+
 setCurrentDate();
 loadManagerDashboard();
+loadRegistrations();

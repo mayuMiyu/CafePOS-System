@@ -65,7 +65,7 @@ document.addEventListener('mousemove', (event) => {
 document.querySelector('.form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const username = document.querySelector('input[name="username"]').value;
+    const username = document.querySelector('input[name="username"]').value.trim();
     const password = document.querySelector('input[name="password"]').value;
 
     try {
@@ -78,11 +78,19 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
         const data = await res.json();
 
         if (data.success) {
-            if (data.role === 'Manager') {
-                window.location.href = '/manager.html';
-            } else {
-                window.location.href = '/cashier.html';
+            const roleRedirects = {
+                Cashier: '/cashier.html',
+                Manager: '/manager.html'
+            };
+
+            const role = data.user?.role || data.role;
+            const redirectPath = roleRedirects[role];
+            if (!redirectPath) {
+                alert('Account role is not supported.');
+                return;
             }
+
+            window.location.href = redirectPath;
         } else {
             alert(data.message);
         }

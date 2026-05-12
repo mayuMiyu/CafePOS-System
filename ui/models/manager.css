@@ -476,9 +476,33 @@ body {
 .registration-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 20px;
+  gap: 14px;
+}
+
+.registration-action {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
   color: #94a3b8;
+  display: grid;
+  place-items: center;
+  font: inherit;
   font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color .18s ease, color .18s ease;
+}
+
+.registration-action.reject:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.registration-action.accept:hover {
+  background: #dcfce7;
+  color: #009933;
 }
 
 .registration-empty {
@@ -499,6 +523,20 @@ body {
 
 .registration-empty span {
   font-size: 15px;
+}
+
+#registrations-body:empty {
+  min-height: 180px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#registrations-body:empty::before {
+  content: "No pending registrations";
+  color: #64748b;
+  font-size: 20px;
 }
 
 .registration-footer {

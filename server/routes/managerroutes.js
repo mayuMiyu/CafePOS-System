@@ -3,7 +3,9 @@ const {
     getManagerDashboard,
     getRegistrations,
     acceptRegistration,
-    rejectRegistration
+    rejectRegistration,
+    getStaffProfiles,
+    updateStaffStatus
 } = require('../controller/managerController');
 
 const router = express.Router();
@@ -12,5 +14,7 @@ router.get('/manager/dashboard', getManagerDashboard);
 router.get('/manager/registrations', getRegistrations);
 router.post('/manager/registrations/:id/accept', acceptRegistration);
 router.delete('/manager/registrations/:id', rejectRegistration);
+router.get('/manager/staff', getStaffProfiles);
+router.patch('/manager/staff/:id/status', updateStaffStatus);
 
 module.exports = router;

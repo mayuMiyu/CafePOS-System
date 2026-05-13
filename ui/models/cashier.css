@@ -93,12 +93,25 @@ html, body{
   cursor:pointer;
   font-size:12px;
   font-weight:650;
-  transition: background-color .18s ease, color .18s ease;
+  transition: background-color .18s ease, color .18s ease, transform .18s ease;
 }
 
 .nav-item.active{
   background:#fff2bd;
   color:#e66a00;
+  animation: navActiveTravel .22s ease-out both;
+}
+
+@keyframes navActiveTravel {
+  from {
+    opacity: .82;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nav-item img {
@@ -795,6 +808,83 @@ html, body{
   transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.held-orders-button {
+  height: 42px;
+  min-width: 54px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #e66a00;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, .08);
+  animation: heldOrderButtonEnter .24s ease-out both;
+}
+
+.held-orders-button img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(43%) sepia(96%) saturate(2196%) hue-rotate(9deg) brightness(99%) contrast(101%);
+}
+
+.held-orders-button span {
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e66a00;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@keyframes heldOrderButtonEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-card.product-enter {
+  animation: productCardEnter 0.38s ease-in both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+@keyframes productCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--enter-y, 10px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card.product-enter {
+    animation: none;
+  }
+}
+
 .product-card:hover {
   border-color: #e5e7eb;
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
@@ -1404,6 +1494,181 @@ html, body{
   border: none;
   background: #ff9900;
   color: #fff;
+}
+
+.held-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, .58);
+}
+
+.held-overlay.active {
+  display: flex;
+}
+
+.held-dialog {
+  width: min(640px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, .28);
+  font-family: "Segoe UI", Arial, sans-serif;
+  animation: heldDialogEnter .22s ease-out both;
+}
+
+@keyframes heldDialogEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.held-header {
+  min-height: 96px;
+  background: #f59100;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 32px;
+}
+
+.held-header h2 {
+  font-size: 26px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.held-header p {
+  margin: 0;
+  opacity: .9;
+}
+
+.held-close-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.held-body {
+  padding: 26px 32px;
+  overflow: auto;
+}
+
+.held-order-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 20px;
+}
+
+.held-order-card + .held-order-card {
+  margin-top: 16px;
+}
+
+.held-order-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.held-order-top h3 {
+  color: #020617;
+  font-size: 19px;
+  margin-bottom: 4px;
+}
+
+.held-order-top p,
+.held-line p {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.held-total {
+  color: #e66a00;
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.held-lines {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.held-line {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+}
+
+.held-line strong {
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.held-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.held-continue-btn,
+.held-discard-btn {
+  height: 48px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.held-continue-btn {
+  border: none;
+  background: #f59100;
+  color: #fff;
+}
+
+.held-discard-btn {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #dc2626;
+}
+
+.held-empty {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  text-align: center;
 }
 
 .note-overlay {

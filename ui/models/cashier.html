@@ -31,14 +31,20 @@
       </div>
 
       <div class="profile">
-        <div class="avatar">JD</div>
-        <div class="profile-name">John</div>
+        <div class="avatar">--</div>
+        <div class="profile-name">Cashier</div>
       </div>
     </aside>
 
     <main class="main">
       <header class="topbar">
-        <div class="title">Cashier</div>
+        <div class="topbar-left">
+          <div class="title">Cashier</div>
+          <button type="button" class="held-orders-button" id="held-orders-button" aria-label="View held orders" hidden>
+            <img src="/assets/icons8-activity-history-100.png" alt="">
+            <span id="held-orders-count">0</span>
+          </button>
+        </div>
         <div class = "topbar-actions">
           <div class = "search-wrap"> 
             <img class = "search-icon" src = "/assets/icons8-search-30.png" alt = "Search">
@@ -164,5 +170,6 @@
   </div>
   <script src = "cashier.js"></script>
   <script src = "getproductCategory.js"></script>
+  <script src = "session.js"></script>
 </body>
 </html>

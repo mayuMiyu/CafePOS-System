@@ -8,6 +8,9 @@ const orderSummary = document.querySelector('.order-summary');
 const checkoutButton = document.querySelector('.checkout-btn');
 const checkoutButtonText = document.querySelector('.checkout-btn span');
 const clearOrderButton = document.querySelector('.clear-btn');
+const holdOrderButton = document.querySelector('.hold-btn');
+const heldOrdersButton = document.getElementById('held-orders-button');
+const heldOrdersCount = document.getElementById('held-orders-count');
 const discountButton = document.getElementById('discount-button');
 const notesButton = document.getElementById('notes-button');
 
@@ -19,8 +22,13 @@ let selectedAddons = [];
 let cartItems = [];
 let isDiscountActive = false;
 let orderNote = '';
+let productCardObserver = null;
+let lastProductScrollTop = 0;
+let productScrollDirection = 'down';
+let heldOrders = [];
 const TAX_RATE = 0.12;
 const DISCOUNT_RATE = 0.05;
+const HELD_ORDERS_STORAGE_KEY = 'makuHeldOrders';
 
 const categoryFallbackImages = {
     1: '../models/assets/icons8-cafe-96.png',
@@ -105,6 +113,29 @@ function getCartTotals() {
     return { subtotal, discount, tax, total };
 }
 
+function loadHeldOrders() {
+    try {
+        heldOrders = JSON.parse(localStorage.getItem(HELD_ORDERS_STORAGE_KEY) || '[]');
+        if (!Array.isArray(heldOrders)) heldOrders = [];
+    } catch {
+        heldOrders = [];
+    }
+
+    updateHeldOrdersButton();
+}
+
+function saveHeldOrders() {
+    localStorage.setItem(HELD_ORDERS_STORAGE_KEY, JSON.stringify(heldOrders));
+    updateHeldOrdersButton();
+}
+
+function updateHeldOrdersButton() {
+    if (!heldOrdersButton || !heldOrdersCount) return;
+
+    heldOrdersButton.hidden = heldOrders.length === 0;
+    heldOrdersCount.textContent = heldOrders.length;
+}
+
 function escapeHtml(value) {
     return String(value ?? '')
         .replaceAll('&', '&amp;')
@@ -143,7 +174,7 @@ function renderProducts() {
     const visibleProducts = getVisibleProducts();
     updateItemsCount(visibleProducts);
 
-    productGrid.innerHTML = visibleProducts.map(product => {
+    productGrid.innerHTML = visibleProducts.map((product, index) => {
         const imgSrc = getProductImage(product);
         const addButton = Number(product.has_options)
             ? `
@@ -154,7 +185,7 @@ function renderProducts() {
             : '';
 
         return `
-            <article class="product-card" data-product-id="${product.id}">
+            <article class="product-card" data-product-id="${product.id}" data-enter-index="${index}" style="--enter-delay: ${(index % 4) * 35}ms">
                 <div class="product-image-wrap"> <img class="product-image" src="${imgSrc}" alt="${product.name}"> </div>
                 <div class="product-info">
                     <h3>${escapeHtml(product.name)}</h3>
@@ -168,6 +199,56 @@ function renderProducts() {
             </article>
         `;
     }).join('');
+
+    requestAnimationFrame(animateProductCards);
+}
+
+function animateProductCards() {
+    const cards = productGrid.querySelectorAll('.product-card');
+    const scrollContainer = productGrid.closest('.center');
+
+    if (!('IntersectionObserver' in window)) {
+        cards.forEach(card => card.classList.add('product-enter'));
+        return;
+    }
+
+    productCardObserver?.disconnect();
+    productCardObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            const enterIndex = Number(entry.target.dataset.enterIndex || 0);
+            const columnIndex = enterIndex % 4;
+            const delayIndex = productScrollDirection === 'up' ? 3 - columnIndex : columnIndex;
+
+            entry.target.style.setProperty(
+                '--enter-y',
+                productScrollDirection === 'up' ? '-10px' : '10px'
+            );
+            entry.target.style.setProperty('--enter-delay', `${delayIndex * 35}ms`);
+            entry.target.classList.toggle('product-enter', entry.isIntersecting);
+        });
+    }, {
+        root: scrollContainer || null,
+        threshold: 0.12
+    });
+
+    cards.forEach(card => {
+        card.addEventListener('animationend', () => {
+            card.classList.remove('product-enter');
+        });
+        productCardObserver.observe(card);
+    });
+}
+
+function trackProductScrollDirection() {
+    const scrollContainer = productGrid.closest('.center');
+    if (!scrollContainer) return;
+
+    lastProductScrollTop = scrollContainer.scrollTop;
+    scrollContainer.addEventListener('scroll', () => {
+        const currentScrollTop = scrollContainer.scrollTop;
+        productScrollDirection = currentScrollTop < lastProductScrollTop ? 'up' : 'down';
+        lastProductScrollTop = currentScrollTop;
+    }, { passive: true });
 }
 
 function ensureProductOptionsModal() {
@@ -497,6 +578,164 @@ function closeNoteModal() {
     modal.setAttribute('aria-hidden', 'true');
 }
 
+function holdCurrentOrder() {
+    if (cartItems.length === 0) return;
+
+    const heldOrder = {
+        id: `hold-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        items: structuredClone(cartItems),
+        isDiscountActive,
+        note: orderNote
+    };
+
+    heldOrders.unshift(heldOrder);
+    saveHeldOrders();
+
+    cartItems = [];
+    isDiscountActive = false;
+    orderNote = '';
+    discountButton.classList.remove('active');
+    updateNoteButtonState();
+    renderCurrentOrder();
+}
+
+function ensureHeldOrdersModal() {
+    if (document.getElementById('held-orders-modal')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <div class="held-overlay" id="held-orders-modal" aria-hidden="true">
+            <div class="held-dialog" role="dialog" aria-modal="true" aria-labelledby="held-orders-title">
+                <div class="held-header">
+                    <div>
+                        <h2 id="held-orders-title">Held Orders</h2>
+                        <p>Continue or discard parked transactions</p>
+                    </div>
+                    <button type="button" class="held-close-btn" id="held-close-btn" aria-label="Close">&times;</button>
+                </div>
+                <div class="held-body" id="held-orders-body"></div>
+            </div>
+        </div>
+    `);
+
+    document.getElementById('held-close-btn').addEventListener('click', closeHeldOrdersModal);
+    document.getElementById('held-orders-modal').addEventListener('click', event => {
+        if (event.target.id === 'held-orders-modal') closeHeldOrdersModal();
+    });
+    document.getElementById('held-orders-body').addEventListener('click', event => {
+        const actionButton = event.target.closest('[data-held-action]');
+        if (!actionButton) return;
+
+        const heldId = actionButton.dataset.heldId;
+        if (actionButton.dataset.heldAction === 'continue') {
+            continueHeldOrder(heldId);
+        } else {
+            discardHeldOrder(heldId);
+        }
+    });
+}
+
+function openHeldOrdersModal() {
+    ensureHeldOrdersModal();
+    renderHeldOrdersModal();
+
+    const modal = document.getElementById('held-orders-modal');
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeHeldOrdersModal() {
+    const modal = document.getElementById('held-orders-modal');
+    if (!modal) return;
+
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function renderHeldOrdersModal() {
+    const body = document.getElementById('held-orders-body');
+    if (!body) return;
+
+    if (heldOrders.length === 0) {
+        body.innerHTML = '<div class="held-empty">No held orders yet</div>';
+        return;
+    }
+
+    body.innerHTML = heldOrders.map((order, index) => {
+        const totals = getHeldOrderTotals(order);
+        const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+        const created = new Date(order.createdAt).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        return `
+            <article class="held-order-card">
+                <div class="held-order-top">
+                    <div>
+                        <h3>Held Order #${heldOrders.length - index}</h3>
+                        <p>${created} · ${itemCount} item(s)</p>
+                    </div>
+                    <strong class="held-total">${formatPesoWithCents(totals.total)}</strong>
+                </div>
+
+                <div class="held-lines">
+                    ${order.items.map(item => `
+                        <div class="held-line">
+                            <div>
+                                <strong>${escapeHtml(getCartItemName(item))}</strong>
+                                <p>${formatPeso(item.unitPrice)} x ${item.quantity}</p>
+                            </div>
+                            <strong>${formatPesoWithCents(item.unitPrice * item.quantity)}</strong>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="held-actions">
+                    <button type="button" class="held-discard-btn" data-held-action="discard" data-held-id="${order.id}">Discard</button>
+                    <button type="button" class="held-continue-btn" data-held-action="continue" data-held-id="${order.id}">Continue Order</button>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
+function getHeldOrderTotals(order) {
+    const subtotal = order.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const discount = order.isDiscountActive ? subtotal * DISCOUNT_RATE : 0;
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal - discount + tax;
+
+    return { subtotal, discount, tax, total };
+}
+
+function continueHeldOrder(heldId) {
+    const heldOrder = heldOrders.find(order => order.id === heldId);
+    if (!heldOrder) return;
+
+    if (cartItems.length > 0 && !confirm('Replace the current order with this held order?')) {
+        return;
+    }
+
+    cartItems = structuredClone(heldOrder.items);
+    isDiscountActive = heldOrder.isDiscountActive;
+    orderNote = heldOrder.note || '';
+    heldOrders = heldOrders.filter(order => order.id !== heldId);
+    saveHeldOrders();
+
+    discountButton.classList.toggle('active', isDiscountActive);
+    updateNoteButtonState();
+    renderCurrentOrder();
+    closeHeldOrdersModal();
+}
+
+function discardHeldOrder(heldId) {
+    heldOrders = heldOrders.filter(order => order.id !== heldId);
+    saveHeldOrders();
+    renderHeldOrdersModal();
+}
+
 function updateNoteButtonState() {
     notesButton.classList.toggle('active', orderNote.length > 0);
 }
@@ -738,6 +977,9 @@ clearOrderButton.addEventListener('click', () => {
     renderCurrentOrder();
 });
 
+holdOrderButton?.addEventListener('click', holdCurrentOrder);
+heldOrdersButton?.addEventListener('click', openHeldOrdersModal);
+
 discountButton.addEventListener('click', () => {
     isDiscountActive = !isDiscountActive;
     discountButton.classList.toggle('active', isDiscountActive);
@@ -776,5 +1018,7 @@ async function loadProducts() {
     }
 }
 
+trackProductScrollDirection();
+loadHeldOrders();
 loadProducts();
 renderCurrentOrder();

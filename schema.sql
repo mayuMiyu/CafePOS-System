@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password`   VARCHAR(255) NOT NULL,
   `email`      VARCHAR(128) NOT NULL,
   `role`       ENUM('Cashier','Manager') DEFAULT 'Cashier',
+  `is_active`  ENUM('active','disabled') DEFAULT 'active',
   `created_at` TIMESTAMP    NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_users_username` (`username`),

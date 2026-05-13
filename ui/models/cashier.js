@@ -1,6 +1,5 @@
 //realtime clock UI
 const clock = document.getElementById('realtime-clock');
-const logoutButton = document.querySelector('.nav-item[aria-label="Logout"]');
 
 function updateClock() {
   const now = new Date();
@@ -14,18 +13,6 @@ function updateClock() {
 
 updateClock();
 setInterval(updateClock, 1000);
-
-async function logout() {
-    try {
-        await fetch('/api/logout', { method: 'POST' });
-    } catch (err) {
-        console.error('Logout failed:', err);
-    } finally {
-        window.location.href = '/';
-    }
-}
-
-logoutButton?.addEventListener('click', logout);
 
 //category active detector
 const categoryBtns = document.querySelectorAll('.category-btn, .category-all-btn');

@@ -89,11 +89,25 @@ body {
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
+  transition: background-color .18s ease, color .18s ease, transform .18s ease;
 }
 
 .nav-item.active {
   background: #fff2bd;
   color: #e66a00;
+  animation: navActiveTravel .22s ease-out both;
+}
+
+@keyframes navActiveTravel {
+  from {
+    opacity: .82;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nav-item img,
@@ -417,6 +431,10 @@ body {
   padding: 18px 30px;
 }
 
+.staff-row {
+  grid-template-columns: 1.15fr 1fr 1.65fr 0.9fr 0.85fr 0.8fr;
+}
+
 .registration-head {
   min-height: 60px;
   background: #f8fafc;
@@ -462,6 +480,25 @@ body {
   font-weight: 700;
 }
 
+.status-pill {
+  width: max-content;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-pill.active {
+  background: #dcfce7;
+  color: #009933;
+}
+
+.status-pill.disabled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
 .registration-date {
   color: #0f172a;
   line-height: 1.35;
@@ -505,6 +542,37 @@ body {
   color: #009933;
 }
 
+.staff-toggle-btn {
+  min-width: 92px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.staff-toggle-btn:hover {
+  transform: translateY(-1px);
+}
+
+.staff-toggle-btn.disable {
+  background: #dc2626;
+}
+
+.staff-toggle-btn.enable {
+  background: #009933;
+}
+
+.staff-toggle-btn:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+  transform: none;
+}
+
 .registration-empty {
   min-height: 180px;
   display: flex;
@@ -535,6 +603,20 @@ body {
 
 #registrations-body:empty::before {
   content: "No pending registrations";
+  color: #64748b;
+  font-size: 20px;
+}
+
+#staff-body:empty {
+  min-height: 180px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#staff-body:empty::before {
+  content: "No staff profiles yet";
   color: #64748b;
   font-size: 20px;
 }

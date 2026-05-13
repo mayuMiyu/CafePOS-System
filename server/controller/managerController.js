@@ -26,6 +26,16 @@ const fetchPendingRegistrations = async (executor = db) => {
     return registrations;
 };
 
+const fetchStaffProfiles = async () => {
+    const [staffProfiles] = await db.execute(
+        `SELECT id, username, name, email, role, is_active, created_at
+         FROM users
+         ORDER BY created_at DESC, id DESC`
+    );
+
+    return staffProfiles;
+};
+
 const getManagerDashboard = async (req, res) => {
     const manager = requireManager(req, res);
     if (!manager) return;
@@ -325,9 +335,66 @@ const rejectRegistration = async (req, res) => {
     }
 };
 
+const getStaffProfiles = async (req, res) => {
+    const manager = requireManager(req, res);
+    if (!manager) return;
+
+    try {
+        const staffProfiles = await fetchStaffProfiles();
+        res.json({
+            success: true,
+            currentUserId: manager.id,
+            staffProfiles
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to load staff profiles' });
+    }
+};
+
+const updateStaffStatus = async (req, res) => {
+    const manager = requireManager(req, res);
+    if (!manager) return;
+
+    const staffId = Number(req.params.id);
+    const { is_active } = req.body;
+
+    if (!Number.isInteger(staffId) || staffId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid staff id' });
+    }
+
+    if (!['active', 'disabled'].includes(is_active)) {
+        return res.status(400).json({ success: false, message: 'Invalid account status' });
+    }
+
+    if (staffId === manager.id && is_active === 'disabled') {
+        return res.status(400).json({ success: false, message: 'You cannot disable your own account' });
+    }
+
+    try {
+        const [result] = await db.execute(
+            `UPDATE users
+             SET is_active = ?
+             WHERE id = ?`,
+            [is_active, staffId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Staff profile not found' });
+        }
+
+        res.json({ success: true, message: 'Staff status updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to update staff status' });
+    }
+};
+
 module.exports = {
     getManagerDashboard,
     getRegistrations,
     acceptRegistration,
-    rejectRegistration
+    rejectRegistration,
+    getStaffProfiles,
+    updateStaffStatus
 };

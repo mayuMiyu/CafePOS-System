@@ -7,8 +7,10 @@ const currentDate = document.getElementById('current-date');
 const pageTitle = document.getElementById('page-title');
 const pageSubtitle = document.getElementById('page-subtitle');
 const registrationsBody = document.getElementById('registrations-body');
+const staffBody = document.getElementById('staff-body');
 const navItems = document.querySelectorAll('.nav-item[data-panel]');
-const logoutButton = document.querySelector('.logout-nav');
+
+let currentManagerId = null;
 
 const panelCopy = {
     manager: {
@@ -196,6 +198,32 @@ async function loadRegistrations() {
     }
 }
 
+async function loadStaffProfiles() {
+    try {
+        const res = await fetch('/api/manager/staff');
+        const data = await res.json();
+
+        if (!data.success) {
+            staffBody.innerHTML = `
+                <div class="registration-empty">
+                    <p>${escapeHtml(data.message || 'Failed to load staff profiles')}</p>
+                </div>
+            `;
+            return;
+        }
+
+        currentManagerId = data.currentUserId;
+        renderStaffProfiles(data.staffProfiles);
+    } catch (err) {
+        console.error('Failed to load staff profiles:', err);
+        staffBody.innerHTML = `
+            <div class="registration-empty">
+                <p>Failed to load staff profiles</p>
+            </div>
+        `;
+    }
+}
+
 function renderDailyReport(report) {
     const hours = Number(report?.hoursClocked || 0);
     const staffCount = Number(report?.staffCount || 0);
@@ -337,6 +365,58 @@ function renderRegistrations(registrations) {
     `;
 }
 
+function renderStaffProfiles(staffProfiles) {
+    if (!staffProfiles || staffProfiles.length === 0) {
+        staffBody.innerHTML = `
+            <div class="registration-empty">
+                <p>No staff profiles yet</p>
+                <span>Accepted accounts will appear here</span>
+            </div>
+            <div class="registration-footer">
+                <span>0 staff profiles</span>
+                <span>Use account status to enable or disable logins</span>
+            </div>
+        `;
+        return;
+    }
+
+    staffBody.innerHTML = `
+        ${staffProfiles.map(staff => {
+            const isActive = staff.is_active === 'active';
+            const isCurrentManager = Number(staff.id) === Number(currentManagerId);
+            const nextStatus = isActive ? 'disabled' : 'active';
+
+            return `
+                <div class="registration-row staff-row">
+                    <div class="registration-user">
+                        <div class="registration-avatar">${escapeHtml(getInitials(staff.name))}</div>
+                        <strong>@${escapeHtml(staff.username)}</strong>
+                    </div>
+                    <strong>${escapeHtml(staff.name)}</strong>
+                    <span class="registration-email">&#9993; ${escapeHtml(staff.email)}</span>
+                    <span class="role-pill">${escapeHtml(staff.role)}</span>
+                    <span class="status-pill ${escapeHtml(staff.is_active)}">${escapeHtml(staff.is_active)}</span>
+                    <span class="registration-actions">
+                        <button
+                            class="staff-toggle-btn ${isActive ? 'disable' : 'enable'}"
+                            type="button"
+                            data-staff-id="${staff.id}"
+                            data-next-status="${nextStatus}"
+                            ${isCurrentManager && isActive ? 'disabled title="You cannot disable your own account"' : ''}
+                        >
+                            ${isActive ? 'Disable' : 'Enable'}
+                        </button>
+                    </span>
+                </div>
+            `;
+        }).join('')}
+        <div class="registration-footer">
+            <span>${staffProfiles.length} staff profile${staffProfiles.length === 1 ? '' : 's'}</span>
+            <span>Disabled accounts cannot log in</span>
+        </div>
+    `;
+}
+
 async function handleRegistrationAction(action, registrationId) {
     if (action === 'reject' && !confirm('Delete this registration permanently?')) {
         return;
@@ -364,6 +444,27 @@ async function handleRegistrationAction(action, registrationId) {
     }
 }
 
+async function handleStaffStatusUpdate(staffId, nextStatus) {
+    try {
+        const res = await fetch(`/api/manager/staff/${staffId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: nextStatus })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+            alert(data.message || 'Failed to update staff status');
+            return;
+        }
+
+        await loadStaffProfiles();
+    } catch (err) {
+        console.error('Failed to update staff status:', err);
+        alert('Failed to update staff status');
+    }
+}
+
 function switchPanel(panelName) {
     document.querySelectorAll('.panel-section').forEach(panel => {
         panel.classList.toggle('active', panel.id === `panel-${panelName}`);
@@ -383,18 +484,6 @@ navItems.forEach(item => {
     });
 });
 
-async function logout() {
-    try {
-        await fetch('/api/logout', { method: 'POST' });
-    } catch (err) {
-        console.error('Logout failed:', err);
-    } finally {
-        window.location.href = '/';
-    }
-}
-
-logoutButton?.addEventListener('click', logout);
-
 registrationsBody.addEventListener('click', event => {
     const actionButton = event.target.closest('[data-registration-action]');
     if (!actionButton) return;
@@ -405,6 +494,17 @@ registrationsBody.addEventListener('click', event => {
     );
 });
 
+staffBody.addEventListener('click', event => {
+    const toggleButton = event.target.closest('[data-staff-id]');
+    if (!toggleButton || toggleButton.disabled) return;
+
+    handleStaffStatusUpdate(
+        toggleButton.dataset.staffId,
+        toggleButton.dataset.nextStatus
+    );
+});
+
 setCurrentDate();
 loadManagerDashboard();
 loadRegistrations();
+loadStaffProfiles();

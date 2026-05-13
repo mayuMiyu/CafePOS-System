@@ -86,12 +86,25 @@ body {
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
-  transition: background-color .18s ease, color .18s ease;
+  transition: background-color .18s ease, color .18s ease, transform .18s ease;
 }
 
 .nav-item.active {
   background: #fff2bd;
   color: #e66a00;
+  animation: navActiveTravel .22s ease-out both;
+}
+
+@keyframes navActiveTravel {
+  from {
+    opacity: .82;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nav-item img {

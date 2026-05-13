@@ -6,7 +6,6 @@ const statSessionRevenue = document.getElementById('stat-session-revenue');
 const profileAvatar = document.getElementById('profile-avatar');
 const profileName = document.getElementById('profile-name');
 const clock = document.getElementById('realtime-clock');
-const logoutButton = document.querySelector('.nav-item[aria-label="Logout"], .nav-item:last-child');
 
 let transactions = [];
 let selectedTransactionId = null;
@@ -58,18 +57,6 @@ function updateClock() {
         hour12: true
     });
 }
-
-async function logout() {
-    try {
-        await fetch('/api/logout', { method: 'POST' });
-    } catch (err) {
-        console.error('Logout failed:', err);
-    } finally {
-        window.location.href = '/';
-    }
-}
-
-logoutButton?.addEventListener('click', logout);
 
 function getInitials(name = '') {
     const parts = name.trim().split(/\s+/).filter(Boolean);

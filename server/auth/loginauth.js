@@ -10,7 +10,7 @@ const login = async (req, res) => {
 
     try {
         const [rows] = await db.execute(
-            `SELECT id, username, name, password, email, role
+            `SELECT id, username, name, password, email, role, is_active
              FROM users
              WHERE username = ?
              LIMIT 1`,
@@ -22,6 +22,11 @@ const login = async (req, res) => {
         }
 
         const user = rows[0];
+
+        if (user.is_active === 'disabled') {
+            return res.status(403).json({ success: false, message: 'This account is disabled' });
+        }
+
         const match = await bcrypt.compare(password, user.password);
 
         if (!match) {
@@ -85,4 +90,20 @@ const logout = async (req, res) => {
     }
 };
 
-module.exports = { login, logout };
+const getCurrentUser = (req, res) => {
+    if (!req.session?.user?.id) {
+        return res.status(401).json({ success: false, message: 'Not logged in' });
+    }
+
+    res.json({
+        success: true,
+        user: {
+            id: req.session.user.id,
+            username: req.session.user.username,
+            name: req.session.user.name,
+            role: req.session.user.role
+        }
+    });
+};
+
+module.exports = { login, logout, getCurrentUser };

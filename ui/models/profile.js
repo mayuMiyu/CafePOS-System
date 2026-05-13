@@ -6,6 +6,7 @@ const statSessionRevenue = document.getElementById('stat-session-revenue');
 const profileAvatar = document.getElementById('profile-avatar');
 const profileName = document.getElementById('profile-name');
 const clock = document.getElementById('realtime-clock');
+const profileNav = document.querySelector('.nav');
 
 let transactions = [];
 let selectedTransactionId = null;
@@ -57,6 +58,15 @@ function updateClock() {
         hour12: true
     });
 }
+
+document.querySelectorAll('[data-nav-target]').forEach(button => {
+    button.addEventListener('click', () => {
+        profileNav?.style.setProperty('--active-index', button.dataset.navIndex);
+        setTimeout(() => {
+            window.location.href = button.dataset.navTarget;
+        }, 170);
+    });
+});
 
 function getInitials(name = '') {
     const parts = name.trim().split(/\s+/).filter(Boolean);

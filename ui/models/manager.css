@@ -63,6 +63,7 @@ body {
 }
 
 .nav {
+  position: relative;
   width: 100%;
   flex: 1;
   display: flex;
@@ -72,8 +73,25 @@ body {
   margin-top: 8px;
 }
 
+.nav::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 0;
+  width: 82px;
+  height: 82px;
+  border-radius: 12px;
+  background: #fff2bd;
+  transform: translate(-50%, calc(var(--active-index, 0) * 112px));
+  transition: transform .26s ease;
+  pointer-events: none;
+}
+
 .nav-item,
 .logout-nav {
+  position: relative;
+  z-index: 1;
   width: 82px;
   height: 82px;
   border: none;
@@ -89,25 +107,12 @@ body {
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
-  transition: background-color .18s ease, color .18s ease, transform .18s ease;
+  transition: color .18s ease;
 }
 
 .nav-item.active {
-  background: #fff2bd;
+  background: transparent;
   color: #e66a00;
-  animation: navActiveTravel .22s ease-out both;
-}
-
-@keyframes navActiveTravel {
-  from {
-    opacity: .82;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .nav-item img,
@@ -199,6 +204,57 @@ body {
 
 .panel-section.active {
   display: block;
+  animation: sectionFadeUp .28s ease-out both;
+}
+
+@keyframes sectionFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-section.active .daily-card,
+.panel-section.active .metric-card,
+.panel-section.active .email-report,
+.panel-section.active .registrations-section,
+.panel-section.active .audit-log-panel {
+  animation: sectionFadeUp .32s ease-out both;
+}
+
+.panel-section.active .daily-card:nth-child(2),
+.panel-section.active .metric-card:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.panel-section.active .daily-card:nth-child(3),
+.panel-section.active .metric-card:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.panel-section.active .daily-card:nth-child(4),
+.panel-section.active .metric-card:nth-child(4) {
+  animation-delay: 105ms;
+}
+
+.panel-section.active .daily-card:nth-child(5) {
+  animation-delay: 140ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-section.active,
+  .panel-section.active .daily-card,
+  .panel-section.active .metric-card,
+  .panel-section.active .email-report,
+  .panel-section.active .registrations-section,
+  .panel-section.active .audit-log-panel {
+    animation: none;
+  }
 }
 
 .section-title {

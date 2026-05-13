@@ -33,6 +33,13 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid username or password' });
         }
 
+        await db.execute(
+            `UPDATE user_sessions
+             SET logged_out_at = logged_in_at
+             WHERE user_id = ? AND logged_out_at IS NULL`,
+            [user.id]
+        );
+
         const [sessionResult] = await db.execute(
             'INSERT INTO user_sessions (user_id, logged_in_at) VALUES (?, NOW())',
             [user.id]

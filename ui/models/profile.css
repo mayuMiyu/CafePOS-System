@@ -60,6 +60,7 @@ body {
 }
 
 .nav {
+  position: relative;
   width: 100%;
   display: flex;
   flex: 1;
@@ -70,7 +71,24 @@ body {
   margin-top: 8px;
 }
 
+.nav::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 0;
+  width: 82px;
+  height: 82px;
+  border-radius: 12px;
+  background: #fff2bd;
+  transform: translate(-50%, calc(var(--active-index, 0) * 112px));
+  transition: transform .26s ease;
+  pointer-events: none;
+}
+
 .nav-item {
+  position: relative;
+  z-index: 1;
   width: 82px;
   height: 82px;
   border-radius: 12px;
@@ -86,25 +104,12 @@ body {
   font-size: 12px;
   font-weight: 650;
   cursor: pointer;
-  transition: background-color .18s ease, color .18s ease, transform .18s ease;
+  transition: color .18s ease;
 }
 
 .nav-item.active {
-  background: #fff2bd;
+  background: transparent;
   color: #e66a00;
-  animation: navActiveTravel .22s ease-out both;
-}
-
-@keyframes navActiveTravel {
-  from {
-    opacity: .82;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .nav-item img {
@@ -189,6 +194,46 @@ body {
   flex: 1;
   overflow: auto;
   padding: 34px 40px;
+}
+
+.profile-content .stat-card,
+.profile-content .history-panel {
+  animation: profileSectionFadeUp .32s ease-out both;
+}
+
+.profile-content .stat-card:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.profile-content .stat-card:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.profile-content .stat-card:nth-child(4) {
+  animation-delay: 105ms;
+}
+
+.profile-content .history-panel {
+  animation-delay: 140ms;
+}
+
+@keyframes profileSectionFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-content .stat-card,
+  .profile-content .history-panel {
+    animation: none;
+  }
 }
 
 .stat-grid {

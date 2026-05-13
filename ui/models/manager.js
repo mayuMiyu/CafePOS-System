@@ -9,6 +9,7 @@ const pageSubtitle = document.getElementById('page-subtitle');
 const registrationsBody = document.getElementById('registrations-body');
 const staffBody = document.getElementById('staff-body');
 const navItems = document.querySelectorAll('.nav-item[data-panel]');
+const managerNav = document.querySelector('.nav');
 
 let currentManagerId = null;
 
@@ -473,6 +474,11 @@ function switchPanel(panelName) {
     navItems.forEach(item => {
         item.classList.toggle('active', item.dataset.panel === panelName);
     });
+
+    const activeItem = document.querySelector(`.nav-item[data-panel="${panelName}"]`);
+    if (activeItem?.dataset.navIndex) {
+        managerNav?.style.setProperty('--active-index', activeItem.dataset.navIndex);
+    }
 
     pageTitle.textContent = panelCopy[panelName].title;
     pageSubtitle.textContent = panelCopy[panelName].subtitle;

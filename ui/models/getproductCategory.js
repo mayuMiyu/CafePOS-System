@@ -29,6 +29,8 @@ let heldOrders = [];
 const TAX_RATE = 0.12;
 const DISCOUNT_RATE = 0.05;
 const HELD_ORDERS_STORAGE_KEY = 'makuHeldOrders';
+const PRODUCTS_CACHE_KEY = 'makuProductsCache';
+let categoryFiltersBound = false;
 
 const categoryFallbackImages = {
     1: '../models/assets/icons8-cafe-96.png',
@@ -170,7 +172,7 @@ function updateProductBadges() {
     });
 }
 
-function renderProducts() {
+function renderProducts(shouldAnimate = true) {
     const visibleProducts = getVisibleProducts();
     updateItemsCount(visibleProducts);
 
@@ -200,7 +202,24 @@ function renderProducts() {
         `;
     }).join('');
 
-    requestAnimationFrame(animateProductCards);
+    if (shouldAnimate) {
+        requestAnimationFrame(animateProductCards);
+    }
+}
+
+function readCachedProducts() {
+    try {
+        const cached = JSON.parse(sessionStorage.getItem(PRODUCTS_CACHE_KEY) || 'null');
+        return Array.isArray(cached) ? cached : null;
+    } catch {
+        return null;
+    }
+}
+
+function setProducts(nextProducts, shouldAnimate = true) {
+    products = nextProducts;
+    updateProductBadges();
+    renderProducts(shouldAnimate);
 }
 
 function animateProductCards() {
@@ -993,6 +1012,9 @@ checkoutButton.addEventListener('click', () => {
 });
 
 function bindCategoryFilters() {
+    if (categoryFiltersBound) return;
+    categoryFiltersBound = true;
+
     productCategoryButtons.forEach(button => {
         button.addEventListener('click', () => {
             activeCategory = button.dataset.category;
@@ -1002,19 +1024,32 @@ function bindCategoryFilters() {
 }
 
 async function loadProducts() {
+    bindCategoryFilters();
+
+    const cachedProducts = readCachedProducts();
+    const cachedRaw = cachedProducts ? JSON.stringify(cachedProducts) : null;
+
+    if (cachedProducts) {
+        setProducts(cachedProducts, true);
+    }
+
     try {
         const res = await fetch('/api/products');
         const data = await res.json();
 
         if (!data.success) return;
 
-        products = data.products;
-        updateProductBadges();
-        renderProducts();
-        bindCategoryFilters();
+        const nextRaw = JSON.stringify(data.products);
+        sessionStorage.setItem(PRODUCTS_CACHE_KEY, nextRaw);
+
+        if (nextRaw !== cachedRaw) {
+            setProducts(data.products, !cachedProducts);
+        } else if (cachedProducts) {
+            requestAnimationFrame(animateProductCards);
+        }
     } catch (err) {
         console.error('Failed to load products:', err);
-        updateItemsCount([]);
+        if (!cachedProducts) updateItemsCount([]);
     }
 }
 

@@ -12,6 +12,13 @@ const requireCashier = (req, res) => {
 const ensureSessionId = async (user, req) => {
     if (user.sessionId) return user.sessionId;
 
+    await db.execute(
+        `UPDATE user_sessions
+         SET logged_out_at = logged_in_at
+         WHERE user_id = ? AND logged_out_at IS NULL`,
+        [user.id]
+    );
+
     const [result] = await db.execute(
         'INSERT INTO user_sessions (user_id, logged_in_at) VALUES (?, NOW())',
         [user.id]
@@ -168,16 +175,18 @@ const getProfileTransactions = async (req, res) => {
         const [[timeSummary]] = await db.execute(
             `SELECT
                 COALESCE(SUM(
-                    TIMESTAMPDIFF(
-                        SECOND,
-                        logged_in_at,
-                        COALESCE(logged_out_at, NOW())
-                    )
+                    CASE
+                        WHEN logged_out_at IS NOT NULL
+                        THEN TIMESTAMPDIFF(SECOND, logged_in_at, logged_out_at)
+                        WHEN id = ?
+                        THEN TIMESTAMPDIFF(SECOND, logged_in_at, NOW())
+                        ELSE 0
+                    END
                 ), 0) AS total_time_seconds,
                 COALESCE(MAX(CASE WHEN id = ? THEN TIMESTAMPDIFF(SECOND, logged_in_at, NOW()) END), 0) AS session_time_seconds
              FROM user_sessions
              WHERE user_id = ?`,
-            [sessionId, user.id]
+            [sessionId, sessionId, user.id]
         );
 
         res.json({

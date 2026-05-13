@@ -13,13 +13,13 @@
         <img src="/assets/maku icon.png" alt="Maku Cafe Logo">
       </div>
 
-      <div class="nav">
+      <div class="nav" style="--active-index: 0;">
         <button class="nav-item active" type="button" aria-label="Orders">
           <img src = "/assets/icons8-order-24.png">
           <span>Orders</span>
         </button>
 
-        <button class="nav-item" type="button" aria-label="Profile" onclick="window.location.href='/profile.html'">
+        <button class="nav-item" type="button" aria-label="Profile" data-nav-target="/profile.html" data-nav-index="1">
           <img src = "/assets/profile icon.png">
           <span>Profile</span>
         </button>

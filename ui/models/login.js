@@ -73,7 +73,8 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
         if (data.success) {
             const roleRedirects = {
                 Cashier: '/cashier.html',
-                Manager: '/manager.html'
+                Manager: '/manager.html',
+                Kitchen: '/kitchen.html'
             };
 
             const role = data.user?.role || data.role;

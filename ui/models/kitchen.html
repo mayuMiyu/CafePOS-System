@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maku Cafe Kitchen</title>
+  <link rel="stylesheet" href="kitchen.css">
+</head>
+<body>
+  <main class="kitchen-app">
+    <header class="kitchen-header">
+      <div class="brand-lockup">
+        <img src="/assets/maku icon.png" alt="Maku Cafe logo">
+        <div>
+          <p>Kitchen Display</p>
+          <h1>Orders to Prepare</h1>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="refresh-btn" type="button" id="refresh-orders">Refresh</button>
+        <button class="logout-nav" type="button">Logout</button>
+      </div>
+    </header>
+
+    <section class="kitchen-status">
+      <article>
+        <span>Active Receipts</span>
+        <strong id="active-order-count">0</strong>
+      </article>
+      <article>
+        <span>Oldest Wait</span>
+        <strong id="oldest-wait">0m</strong>
+      </article>
+      <article>
+        <span>Last Updated</span>
+        <strong id="last-updated">--</strong>
+      </article>
+    </section>
+
+    <section class="orders-board" id="orders-board">
+      <div class="orders-empty">
+        <h2>No active kitchen orders</h2>
+        <p>New receipts will appear here when cashiers checkout.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="kitchen.js"></script>
+  <script src="session.js"></script>
+</body>
+</html>

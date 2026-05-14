@@ -9,18 +9,23 @@ function redirectByRole(user, res) {
         return res.redirect('/cashier.html');
     }
 
+    if (user?.role === 'Kitchen') {
+        return res.redirect('/kitchen.html');
+    }
+
     return res.redirect('/');
 }
 
-function requirePageRole(role, fileName) {
+function requirePageRole(roles, fileName) {
     return (req, res) => {
         const user = req.session?.user;
+        const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
         if (!user) {
             return res.redirect('/');
         }
 
-        if (user.role !== role) {
+        if (!allowedRoles.includes(user.role)) {
             return redirectByRole(user, res);
         }
 

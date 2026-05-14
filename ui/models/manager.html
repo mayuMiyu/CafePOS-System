@@ -24,7 +24,12 @@
           <span>Transactions</span>
         </button>
 
-        <button class="nav-item" type="button" data-panel="staff" data-nav-index="2">
+        <button class="nav-item" type="button" data-panel="food" data-nav-index="2">
+          <img src="/assets/icons8-online-store-64.png" alt="">
+          <span>Food</span>
+        </button>
+
+        <button class="nav-item" type="button" data-panel="staff" data-nav-index="3">
           <img src="/assets/profile icon.png" alt="">
           <span>Staff Profiles</span>
         </button>
@@ -196,6 +201,33 @@
                   <span>Staff and transaction activity will appear here</span>
                 </div>
               </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="panel-section" id="panel-food">
+          <section class="food-panel">
+            <div class="section-title">
+              <span class="section-icon">&#9749;</span>
+              <h2>Food Availability</h2>
+            </div>
+
+            <div class="food-toolbar">
+              <div>
+                <h3>Menu Items</h3>
+                <p>Unavailable items are hidden from the cashier menu.</p>
+              </div>
+              <div class="food-filters" aria-label="Food categories">
+                <button class="food-filter active" type="button" data-food-category="all">All <span id="food-count-all">0</span></button>
+                <button class="food-filter" type="button" data-food-category="1">Coffee <span id="food-count-1">0</span></button>
+                <button class="food-filter" type="button" data-food-category="2">Food <span id="food-count-2">0</span></button>
+                <button class="food-filter" type="button" data-food-category="3">Desserts <span id="food-count-3">0</span></button>
+                <button class="food-filter" type="button" data-food-category="4">Beverages <span id="food-count-4">0</span></button>
+              </div>
+            </div>
+
+            <div class="food-grid" id="manager-food-grid">
+              <div class="food-empty">Loading menu items...</div>
             </div>
           </section>
         </section>

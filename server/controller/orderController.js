@@ -9,6 +9,20 @@ const requireCashier = (req, res) => {
     return req.session.user;
 };
 
+const requireKitchen = (req, res) => {
+    if (!req.session?.user?.id) {
+        res.status(401).json({ success: false, message: 'Not logged in' });
+        return null;
+    }
+
+    if (!['Kitchen', 'Manager'].includes(req.session.user.role)) {
+        res.status(403).json({ success: false, message: 'Kitchen access required' });
+        return null;
+    }
+
+    return req.session.user;
+};
+
 const ensureSessionId = async (user, req) => {
     if (user.sessionId) return user.sessionId;
 
@@ -58,7 +72,7 @@ const checkoutOrder = async (req, res) => {
         const [orderResult] = await db.execute(
             `INSERT INTO orders
                 (cashier_id, session_id, status, subtotal, tax_amount, discount_amount, total, payment_method, notes, completed_at)
-             VALUES (?, ?, 'completed', ?, ?, ?, ?, ?, ?, NOW())`,
+             VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, NULL)`,
             [
                 user.id,
                 sessionId,
@@ -125,6 +139,88 @@ const checkoutOrder = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Checkout failed' });
+    }
+};
+
+const fetchOrderItems = async (orderId) => {
+    const [items] = await db.execute(
+        'SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC',
+        [orderId]
+    );
+
+    for (const item of items) {
+        const [addons] = await db.execute(
+            'SELECT * FROM order_item_addons WHERE order_item_id = ? ORDER BY id ASC',
+            [item.id]
+        );
+        item.addons = addons;
+    }
+
+    return items;
+};
+
+const getKitchenOrders = async (req, res) => {
+    const user = requireKitchen(req, res);
+    if (!user) return;
+
+    try {
+        const [orders] = await db.execute(
+            `SELECT
+                o.id,
+                o.status,
+                o.notes,
+                o.created_at,
+                o.total,
+                u.name AS cashier_name,
+                u.username AS cashier_username,
+                (
+                    SELECT COALESCE(SUM(oi.quantity), 0)
+                    FROM order_items oi
+                    WHERE oi.order_id = o.id
+                ) AS item_count
+             FROM orders o
+             INNER JOIN users u ON u.id = o.cashier_id
+             WHERE o.status = 'pending'
+             ORDER BY o.created_at ASC`
+        );
+
+        for (const order of orders) {
+            order.items = await fetchOrderItems(order.id);
+        }
+
+        res.json({ success: true, orders });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to load kitchen orders' });
+    }
+};
+
+const completeKitchenOrder = async (req, res) => {
+    const user = requireKitchen(req, res);
+    if (!user) return;
+
+    const orderId = Number(req.params.id);
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid order id' });
+    }
+
+    try {
+        const [result] = await db.execute(
+            `UPDATE orders
+             SET status = 'completed', completed_at = NOW(), completed_by = ?
+             WHERE id = ?
+                AND status = 'pending'`,
+            [user.id, orderId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Pending order not found' });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to complete order' });
     }
 };
 
@@ -234,18 +330,7 @@ const getTransactionDetails = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Transaction not found' });
         }
 
-        const [items] = await db.execute(
-            'SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC',
-            [order.id]
-        );
-
-        for (const item of items) {
-            const [addons] = await db.execute(
-                'SELECT * FROM order_item_addons WHERE order_item_id = ? ORDER BY id ASC',
-                [item.id]
-            );
-            item.addons = addons;
-        }
+        const items = await fetchOrderItems(order.id);
 
         res.json({ success: true, order, items });
     } catch (err) {
@@ -290,6 +375,8 @@ const updateOrderStatus = async (req, res) => {
 
 module.exports = {
     checkoutOrder,
+    getKitchenOrders,
+    completeKitchenOrder,
     getProfileTransactions,
     getTransactionDetails,
     updateOrderStatus

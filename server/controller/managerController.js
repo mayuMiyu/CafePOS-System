@@ -36,6 +36,25 @@ const fetchStaffProfiles = async () => {
     return staffProfiles;
 };
 
+const fetchMenuProducts = async () => {
+    const [products] = await db.execute(
+        `SELECT
+            p.id,
+            p.category_id,
+            c.name AS category_name,
+            p.name,
+            p.description,
+            p.base_price,
+            p.image_url,
+            p.is_available
+         FROM products p
+         INNER JOIN categories c ON c.id = p.category_id
+         ORDER BY c.id ASC, p.name ASC`
+    );
+
+    return products;
+};
+
 const getManagerDashboard = async (req, res) => {
     const manager = requireManager(req, res);
     if (!manager) return;
@@ -64,10 +83,28 @@ const getManagerDashboard = async (req, res) => {
                     u.name,
                     'listed' AS action_type,
                     'Listed an order' AS action_label,
-                    CONCAT('Order #', o.id, ' - ', COALESCE(item_counts.item_count, 0), ' item(s), ₱', FORMAT(o.total, 2)) AS details,
-                    o.completed_at AS event_time
+                    CONCAT('Order #', o.id, ' - ', COALESCE(item_counts.item_count, 0), ' item(s), â‚±', FORMAT(o.total, 2), ' sent to kitchen') AS details,
+                    o.created_at AS event_time
                 FROM orders o
                 INNER JOIN users u ON u.id = o.cashier_id
+                LEFT JOIN (
+                    SELECT order_id, SUM(quantity) AS item_count
+                    FROM order_items
+                    GROUP BY order_id
+                ) item_counts ON item_counts.order_id = o.id
+
+                UNION ALL
+
+                SELECT
+                    actor.username,
+                    actor.name,
+                    'completed' AS action_type,
+                    'Completed an order' AS action_label,
+                    CONCAT('Order #', o.id, ' - ', COALESCE(item_counts.item_count, 0), ' item(s), ₱', FORMAT(o.total, 2), ' by cashier @', cashier.username) AS details,
+                    o.completed_at AS event_time
+                FROM orders o
+                INNER JOIN users cashier ON cashier.id = o.cashier_id
+                INNER JOIN users actor ON actor.id = COALESCE(o.completed_by, o.cashier_id)
                 LEFT JOIN (
                     SELECT order_id, SUM(quantity) AS item_count
                     FROM order_items
@@ -390,11 +427,61 @@ const updateStaffStatus = async (req, res) => {
     }
 };
 
+const getMenuProducts = async (req, res) => {
+    const manager = requireManager(req, res);
+    if (!manager) return;
+
+    try {
+        const products = await fetchMenuProducts();
+        res.json({ success: true, products });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to load menu products' });
+    }
+};
+
+const updateProductAvailability = async (req, res) => {
+    const manager = requireManager(req, res);
+    if (!manager) return;
+
+    const productId = Number(req.params.id);
+    const { is_available } = req.body;
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid product id' });
+    }
+
+    if (![0, 1, false, true].includes(is_available)) {
+        return res.status(400).json({ success: false, message: 'Invalid availability value' });
+    }
+
+    try {
+        const [result] = await db.execute(
+            `UPDATE products
+             SET is_available = ?
+             WHERE id = ?`,
+            [is_available ? 1 : 0, productId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        res.json({ success: true, message: 'Product availability updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to update product availability' });
+    }
+};
+
 module.exports = {
     getManagerDashboard,
     getRegistrations,
     acceptRegistration,
     rejectRegistration,
     getStaffProfiles,
-    updateStaffStatus
+    updateStaffStatus,
+    getMenuProducts,
+    updateProductAvailability
 };
+

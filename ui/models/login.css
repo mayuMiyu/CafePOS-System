@@ -107,7 +107,7 @@ body.intro-revealing #scene {
 
 .intro-copy {
     position: absolute;
-    top: calc(50% + clamp(112px, 10vw, 184px));
+    top: calc(50% + clamp(98px, 8.5vw, 160px));
     max-width: min(86vw, 760px);
     margin: 0;
     color: rgba(255, 255, 255, 0.93);
@@ -267,7 +267,7 @@ body.intro-revealing #scene {
 }
 
 #righteye {
-    left: 72.42%;
+    left: 72.22%;
 }
 
 .mascot-pupil {

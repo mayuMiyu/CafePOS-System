@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name`       VARCHAR(128) NOT NULL,
   `password`   VARCHAR(255) NOT NULL,
   `email`      VARCHAR(128) NOT NULL,
-  `role`       ENUM('Cashier','Manager') DEFAULT 'Cashier',
+  `role`       ENUM('Cashier','Manager','Kitchen') DEFAULT 'Cashier',
   `is_active`  ENUM('active','disabled') DEFAULT 'active',
   `created_at` TIMESTAMP    NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -108,15 +108,19 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `notes`           TEXT,
   `created_at`      TIMESTAMP     NULL DEFAULT CURRENT_TIMESTAMP,
   `completed_at`    TIMESTAMP     NULL DEFAULT NULL,
+  `completed_by`    INT           DEFAULT NULL,
   `voided_at`       TIMESTAMP     NULL DEFAULT NULL,
   `refunded_at`     TIMESTAMP     NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_orders_status`  (`status`),
   KEY `idx_orders_cashier` (`cashier_id`),
+  KEY `idx_orders_completed_by` (`completed_by`),
   KEY `idx_orders_session` (`session_id`),
   KEY `idx_orders_created` (`created_at`),
   CONSTRAINT `fk_orders_cashier`
     FOREIGN KEY (`cashier_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_orders_completed_by`
+    FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_orders_session`
     FOREIGN KEY (`session_id`) REFERENCES `user_sessions` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

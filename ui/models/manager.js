@@ -8,10 +8,21 @@ const pageTitle = document.getElementById('page-title');
 const pageSubtitle = document.getElementById('page-subtitle');
 const registrationsBody = document.getElementById('registrations-body');
 const staffBody = document.getElementById('staff-body');
+const managerFoodGrid = document.getElementById('manager-food-grid');
 const navItems = document.querySelectorAll('.nav-item[data-panel]');
 const managerNav = document.querySelector('.nav');
+const foodFilterButtons = document.querySelectorAll('.food-filter');
 
 let currentManagerId = null;
+let managerProducts = [];
+let activeFoodCategory = 'all';
+
+const categoryFallbackImages = {
+    1: '/assets/icons8-cafe-96.png',
+    2: '/assets/icons8-greek-salad-64.png',
+    3: '/assets/icons8-cherry-cheesecake-64.png',
+    4: '/assets/icons8-kawaii-soda-64.png'
+};
 
 const panelCopy = {
     manager: {
@@ -21,6 +32,10 @@ const panelCopy = {
     transactions: {
         title: 'Transactions',
         subtitle: 'Review transaction metrics and audit activity.'
+    },
+    food: {
+        title: 'Food Availability',
+        subtitle: 'Set which menu items cashiers can sell.'
     },
     staff: {
         title: 'Staff Profiles',
@@ -135,6 +150,10 @@ function getInitials(name = '') {
     return parts.map(part => part[0]).join('').slice(0, 2).toUpperCase();
 }
 
+function getProductImage(product) {
+    return product.image_url || categoryFallbackImages[product.category_id] || '/assets/icons8-cafe-96.png';
+}
+
 function setCurrentDate() {
     const now = new Date();
     currentDate.textContent = now.toLocaleDateString('en-US', {
@@ -222,6 +241,24 @@ async function loadStaffProfiles() {
                 <p>Failed to load staff profiles</p>
             </div>
         `;
+    }
+}
+
+async function loadManagerProducts() {
+    try {
+        const res = await fetch('/api/manager/products');
+        const data = await res.json();
+
+        if (!data.success) {
+            managerFoodGrid.innerHTML = `<div class="food-empty">${escapeHtml(data.message || 'Failed to load menu items')}</div>`;
+            return;
+        }
+
+        managerProducts = data.products;
+        renderManagerProducts();
+    } catch (err) {
+        console.error('Failed to load menu items:', err);
+        managerFoodGrid.innerHTML = '<div class="food-empty">Failed to load menu items</div>';
     }
 }
 
@@ -418,6 +455,62 @@ function renderStaffProfiles(staffProfiles) {
     `;
 }
 
+function updateFoodCounts() {
+    const counts = { all: managerProducts.length };
+
+    managerProducts.forEach(product => {
+        counts[product.category_id] = (counts[product.category_id] || 0) + 1;
+    });
+
+    ['all', '1', '2', '3', '4'].forEach(id => {
+        const countEl = document.getElementById(`food-count-${id}`);
+        if (countEl) countEl.textContent = counts[id] || 0;
+    });
+}
+
+function renderManagerProducts() {
+    updateFoodCounts();
+
+    const visibleProducts = activeFoodCategory === 'all'
+        ? managerProducts
+        : managerProducts.filter(product => String(product.category_id) === activeFoodCategory);
+
+    if (visibleProducts.length === 0) {
+        managerFoodGrid.innerHTML = '<div class="food-empty">No menu items in this category</div>';
+        return;
+    }
+
+    managerFoodGrid.innerHTML = visibleProducts.map(product => {
+        const isAvailable = Number(product.is_available) === 1;
+
+        return `
+            <article class="manager-food-card ${isAvailable ? '' : 'unavailable'}">
+                <div class="manager-food-media">
+                    <img src="${escapeHtml(getProductImage(product))}" alt="${escapeHtml(product.name)}">
+                </div>
+                <div class="manager-food-body">
+                    <div class="manager-food-top">
+                        <h3>${escapeHtml(product.name)}</h3>
+                        <span class="manager-food-category">${escapeHtml(product.category_name)}</span>
+                    </div>
+                    <p class="manager-food-description">${escapeHtml(product.description || 'No description available')}</p>
+                    <div class="manager-food-footer">
+                        <span class="manager-food-price">${formatPesoWhole(product.base_price)}</span>
+                        <button
+                            class="availability-toggle ${isAvailable ? 'available' : 'unavailable'}"
+                            type="button"
+                            data-product-id="${product.id}"
+                            data-next-availability="${isAvailable ? '0' : '1'}"
+                        >
+                            ${isAvailable ? 'Available' : 'Unavailable'}
+                        </button>
+                    </div>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
 async function handleRegistrationAction(action, registrationId) {
     if (action === 'reject' && !confirm('Delete this registration permanently?')) {
         return;
@@ -466,6 +559,37 @@ async function handleStaffStatusUpdate(staffId, nextStatus) {
     }
 }
 
+async function handleProductAvailabilityUpdate(productId, nextAvailability, button) {
+    button.disabled = true;
+    const originalText = button.textContent;
+    button.textContent = 'Saving...';
+
+    try {
+        const res = await fetch(`/api/manager/products/${productId}/availability`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_available: Number(nextAvailability) })
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+            alert(data.message || 'Failed to update availability');
+            return;
+        }
+
+        const product = managerProducts.find(item => String(item.id) === String(productId));
+        if (product) product.is_available = Number(nextAvailability);
+        renderManagerProducts();
+        sessionStorage.removeItem('makuProductsCache');
+    } catch (err) {
+        console.error('Failed to update product availability:', err);
+        alert('Failed to update availability');
+    } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+    }
+}
+
 function switchPanel(panelName) {
     document.querySelectorAll('.panel-section').forEach(panel => {
         panel.classList.toggle('active', panel.id === `panel-${panelName}`);
@@ -482,6 +606,14 @@ function switchPanel(panelName) {
 
     pageTitle.textContent = panelCopy[panelName].title;
     pageSubtitle.textContent = panelCopy[panelName].subtitle;
+
+    if (panelName === 'transactions' || panelName === 'manager') {
+        loadManagerDashboard();
+    }
+
+    if (panelName === 'food') {
+        loadManagerProducts();
+    }
 }
 
 navItems.forEach(item => {
@@ -510,7 +642,27 @@ staffBody.addEventListener('click', event => {
     );
 });
 
+managerFoodGrid.addEventListener('click', event => {
+    const toggleButton = event.target.closest('[data-product-id]');
+    if (!toggleButton || toggleButton.disabled) return;
+
+    handleProductAvailabilityUpdate(
+        toggleButton.dataset.productId,
+        toggleButton.dataset.nextAvailability,
+        toggleButton
+    );
+});
+
+foodFilterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        activeFoodCategory = button.dataset.foodCategory;
+        foodFilterButtons.forEach(item => item.classList.toggle('active', item === button));
+        renderManagerProducts();
+    });
+});
+
 setCurrentDate();
 loadManagerDashboard();
 loadRegistrations();
 loadStaffProfiles();
+loadManagerProducts();

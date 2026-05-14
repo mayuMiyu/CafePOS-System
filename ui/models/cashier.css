@@ -810,6 +810,7 @@ html, body{
   border: 1px solid #dfe3e8;
   border-radius: 14px;
   background: #fff;
+  cursor: pointer;
   transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 

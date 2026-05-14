@@ -424,34 +424,41 @@ function updateOptionsSummary() {
     document.getElementById('options-add-btn').textContent = `+ Add to Cart - ${formatPeso(total)}`;
 }
 
-function addSelectedProductToCart() {
-    if (!selectedProduct) return;
+function addProductToCart(product, size = null, addons = []) {
+    if (!product) return;
 
-    const normalizedAddons = [...selectedAddons].sort((a, b) => Number(a.id) - Number(b.id));
-    const key = getCartItemKey(selectedProduct.id, selectedSize?.id, normalizedAddons);
+    const normalizedAddons = [...addons].sort((a, b) => Number(a.id) - Number(b.id));
+    const key = getCartItemKey(product.id, size?.id, normalizedAddons);
     const existingItem = cartItems.find(item => item.key === key);
+    const unitPrice = size ? Number(size.price) : Number(product.base_price ?? 0);
 
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
         cartItems.push({
             key,
-            productId: selectedProduct.id,
-            productName: selectedProduct.name,
-            sizeId: selectedSize?.id ?? null,
-            sizeLabel: selectedSize?.label ?? null,
+            productId: product.id,
+            productName: product.name,
+            sizeId: size?.id ?? null,
+            sizeLabel: size?.label ?? null,
             addons: normalizedAddons.map(addon => ({
                 id: addon.id,
                 name: addon.name,
                 extra_price: Number(addon.extra_price)
             })),
-            unitPrice: getCurrentOptionTotal(),
+            unitPrice: unitPrice + normalizedAddons.reduce((sum, addon) => sum + Number(addon.extra_price), 0),
             quantity: 1
         });
     }
 
     renderCurrentOrder();
     scrollOrderListToBottom();
+}
+
+function addSelectedProductToCart() {
+    if (!selectedProduct) return;
+
+    addProductToCart(selectedProduct, selectedSize, selectedAddons);
     closeProductOptionsModal();
 }
 
@@ -971,9 +978,19 @@ async function openProductOptions(productId) {
 
 productGrid.addEventListener('click', (event) => {
     const button = event.target.closest('.add-product-btn');
-    if (!button) return;
+    const card = event.target.closest('.product-card');
+    if (!card) return;
 
-    openProductOptions(button.dataset.productId);
+    const productId = button?.dataset.productId || card.dataset.productId;
+    const product = products.find(item => String(item.id) === String(productId));
+    if (!product) return;
+
+    if (Number(product.has_options)) {
+        openProductOptions(productId);
+        return;
+    }
+
+    addProductToCart(product);
 });
 
 orderBox.addEventListener('click', (event) => {
@@ -1025,13 +1042,7 @@ function bindCategoryFilters() {
 
 async function loadProducts() {
     bindCategoryFilters();
-
-    const cachedProducts = readCachedProducts();
-    const cachedRaw = cachedProducts ? JSON.stringify(cachedProducts) : null;
-
-    if (cachedProducts) {
-        setProducts(cachedProducts, true);
-    }
+    sessionStorage.removeItem(PRODUCTS_CACHE_KEY);
 
     try {
         const res = await fetch('/api/products');
@@ -1041,15 +1052,10 @@ async function loadProducts() {
 
         const nextRaw = JSON.stringify(data.products);
         sessionStorage.setItem(PRODUCTS_CACHE_KEY, nextRaw);
-
-        if (nextRaw !== cachedRaw) {
-            setProducts(data.products, !cachedProducts);
-        } else if (cachedProducts) {
-            requestAnimationFrame(animateProductCards);
-        }
+        setProducts(data.products, true);
     } catch (err) {
         console.error('Failed to load products:', err);
-        if (!cachedProducts) updateItemsCount([]);
+        updateItemsCount([]);
     }
 }
 

@@ -28,6 +28,7 @@ app.use('/api', managerRoutes);
 app.get('/cashier.html', requirePageRole('Cashier', 'cashier.html'));
 app.get('/profile.html', requirePageRole('Cashier', 'profile.html'));
 app.get('/manager.html', requirePageRole('Manager', 'manager.html'));
+app.get('/kitchen.html', requirePageRole(['Kitchen', 'Manager'], 'kitchen.html'));
 app.use(express.static(path.join(__dirname, '../ui/models'), {
     index: false,
     extensions: false

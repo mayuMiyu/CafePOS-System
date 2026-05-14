@@ -5,7 +5,9 @@ const {
     acceptRegistration,
     rejectRegistration,
     getStaffProfiles,
-    updateStaffStatus
+    updateStaffStatus,
+    getMenuProducts,
+    updateProductAvailability
 } = require('../controller/managerController');
 
 const router = express.Router();
@@ -16,5 +18,7 @@ router.post('/manager/registrations/:id/accept', acceptRegistration);
 router.delete('/manager/registrations/:id', rejectRegistration);
 router.get('/manager/staff', getStaffProfiles);
 router.patch('/manager/staff/:id/status', updateStaffStatus);
+router.get('/manager/products', getMenuProducts);
+router.patch('/manager/products/:id/availability', updateProductAvailability);
 
 module.exports = router;

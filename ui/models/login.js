@@ -1,49 +1,39 @@
 const donut = document.getElementById('donut');
+const donutWrapper = document.getElementById('donut-wrapper');
 const eyeLeft = document.getElementById('lefteye');
 const eyeRight = document.getElementById('righteye');
+const loginIntro = document.getElementById('loginIntro');
 
-const MAX_OFFSET = 3.45;
+function finishLoginIntro() {
+    document.body.classList.add('intro-revealing');
 
-const LEFT_EYE_X = 0.663;
-const LEFT_EYE_Y = 0.387;
-const RIGHT_EYE_X = 0.739;
-const RIGHT_EYE_Y = 0.385;
+    setTimeout(() => {
+        loginIntro?.classList.add('is-finished');
+        document.body.classList.remove('intro-running');
+    }, 720);
 
-//eye config
-function positionEyes() {
-    const rect = donut.getBoundingClientRect();
-    
-    const leftX = rect.left + rect.width * LEFT_EYE_X;
-    const leftY = rect.top + rect.height * LEFT_EYE_Y;
-    const rightX = rect.left + rect.width * RIGHT_EYE_X;
-    const rightY = rect.top + rect.height * RIGHT_EYE_Y;
-
-    eyeLeft.style.position = 'fixed';
-    eyeLeft.style.left = leftX + 'px';
-    eyeLeft.style.top = leftY + 'px';
-
-    eyeRight.style.position = 'fixed';
-    eyeRight.style.left = rightX + 'px';
-    eyeRight.style.top = rightY + 'px';
+    setTimeout(() => {
+        loginIntro?.remove();
+        document.body.classList.remove('intro-revealing');
+    }, 1500);
 }
 
-positionEyes();
-window.addEventListener('resize', positionEyes);
+if (loginIntro) {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let baseLeftLeft, baseLeftTop, baseRightLeft, baseRightTop;
-
-function updateBase() {
-    baseLeftLeft = parseFloat(eyeLeft.style.left);
-    baseLeftTop = parseFloat(eyeLeft.style.top);
-    baseRightLeft = parseFloat(eyeRight.style.left);
-    baseRightTop = parseFloat(eyeRight.style.top);
+    if (prefersReducedMotion) {
+        finishLoginIntro();
+    } else {
+        setTimeout(finishLoginIntro, 4720);
+    }
 }
 
-updateBase();
-window.addEventListener('resize', updateBase);
+const MAX_OFFSET = 2.6;
 
 //eye tracker
 document.addEventListener('mousemove', (event) => {
+    if (!donut || !donutWrapper || !eyeLeft || !eyeRight) return;
+
     const rect = donut.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
@@ -55,10 +45,13 @@ document.addEventListener('mousemove', (event) => {
     const offsetX = (dx / dist) * MAX_OFFSET;
     const offsetY = (dy / dist) * MAX_OFFSET;
 
-    eyeLeft.style.left = (baseLeftLeft + offsetX) + 'px';
-    eyeLeft.style.top = (baseLeftTop + offsetY) + 'px';
-    eyeRight.style.left = (baseRightLeft + offsetX) + 'px';
-    eyeRight.style.top = (baseRightTop + offsetY) + 'px';
+    donutWrapper.style.setProperty('--eye-offset-x', `${offsetX}px`);
+    donutWrapper.style.setProperty('--eye-offset-y', `${offsetY}px`);
+});
+
+document.addEventListener('mouseleave', () => {
+    donutWrapper?.style.setProperty('--eye-offset-x', '0px');
+    donutWrapper?.style.setProperty('--eye-offset-y', '0px');
 });
 
 //JSON data for login 

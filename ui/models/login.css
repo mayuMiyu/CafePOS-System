@@ -1,11 +1,14 @@
 body {
     margin: 0;
     padding: 0;
+    background: #ef7900;
+    overflow: hidden;
 }
 
 main {
     width: 100%;
     height: 100vh;
+    overflow: hidden;
 }
 
 #scene {
@@ -13,6 +16,209 @@ main {
     width: 100%;
     height: 100vh;
     overflow: hidden;
+    opacity: 1;
+}
+
+body.intro-running:not(.intro-revealing) #scene {
+    opacity: 0;
+    transform: scale(1.02);
+}
+
+body.intro-revealing #scene {
+    animation: loginSceneReveal 1.2s ease forwards;
+}
+
+.login-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 40% 45%, rgba(255, 184, 54, 0.36), transparent 28%),
+        linear-gradient(118deg, #ff9b00 0%, #f57b00 52%, #ff4b00 100%);
+    transition: opacity 0.75s ease, visibility 0.75s ease;
+}
+
+.login-intro.is-finished {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.intro-grain,
+.intro-grain::before,
+.intro-grain::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+}
+
+.intro-grain {
+    background-image:
+        radial-gradient(circle, rgba(255, 236, 199, 0.33) 0 2px, transparent 2.5px),
+        radial-gradient(circle, rgba(255, 236, 199, 0.24) 0 1.5px, transparent 2px);
+    background-position: 8vw 9vh, 51vw 26vh;
+    background-size: 24vw 28vh, 31vw 36vh;
+    opacity: 0.5;
+}
+
+.intro-stage {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    width: min(88vw, 760px);
+    min-height: 360px;
+}
+
+.intro-logo-shell {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: clamp(220px, 18vw, 340px);
+    aspect-ratio: 1;
+    color: #ee7d00;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    transform-origin: center;
+    animation:
+        introLogoScaleIn 1s cubic-bezier(0.2, 0.78, 0.28, 1) both,
+        introLogoZoomReveal 1.35s cubic-bezier(0.58, 0.02, 0.2, 1) 4.45s forwards;
+}
+
+.intro-logo {
+    width: 100%;
+    height: 100%;
+}
+
+.intro-logo-image {
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(96, 50, 0, 0.16));
+    transform-origin: center;
+    animation:
+        introLogoRotateIn 1s cubic-bezier(0.2, 0.78, 0.28, 1) both,
+        introLogoRotateReveal 1.35s cubic-bezier(0.58, 0.02, 0.2, 1) 4.45s forwards;
+}
+
+.intro-copy {
+    position: absolute;
+    top: calc(50% + clamp(112px, 10vw, 184px));
+    max-width: min(86vw, 760px);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.93);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-18px);
+    text-shadow: 0 8px 28px rgba(105, 42, 0, 0.22);
+    white-space: normal;
+}
+
+.intro-copy-leisure {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.1rem, 1.7vw, 1.8rem);
+    font-style: italic;
+    font-weight: 400;
+    animation: introTextFadeDown 1.85s ease 1s both;
+}
+
+.intro-copy-brand {
+    font-family: Poppins, "Segoe UI", sans-serif;
+    font-size: clamp(2.6rem, 4.1vw, 4.7rem);
+    font-weight: 700;
+    letter-spacing: 0;
+    animation: introTextFadeDown 1.45s ease 2.85s both;
+}
+
+@keyframes introLogoScaleIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.58);
+    }
+    56% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes introLogoRotateIn {
+    0% {
+        transform: rotate(78deg);
+    }
+    56% {
+        transform: rotate(18deg);
+    }
+    100% {
+        transform: rotate(35deg);
+    }
+}
+
+@keyframes introTextFadeDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    28%,
+    68% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+}
+
+@keyframes introLogoZoomReveal {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0.92;
+        transform: scale(17);
+    }
+}
+
+@keyframes introLogoRotateReveal {
+    0% {
+        transform: rotate(35deg);
+    }
+    100% {
+        transform: rotate(425deg);
+    }
+}
+
+@keyframes loginSceneReveal {
+    0% {
+        opacity: 0;
+        transform: scale(1.02);
+        filter: blur(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .intro-logo-shell,
+    .intro-logo-image,
+    .intro-copy,
+    body.intro-revealing #scene,
+    .login-intro {
+        animation: none;
+        transition-duration: 0.01ms;
+    }
 }
 
 #background {
@@ -31,6 +237,8 @@ main {
     left: -10%;
     width: 70%;
     z-index: 2;
+    --eye-offset-x: 0px;
+    --eye-offset-y: 0px;
 }
 
 #donut {
@@ -39,24 +247,40 @@ main {
     display: block;
 }
 
-#lefteye {
+#lefteye,
+#righteye {
     position: absolute;
-    top: 39%;
-    left: 66.5%;
-    width: 2.5%;
-    height: auto;
+    top: 36.85%;
+    width: 6.9%;
+    aspect-ratio: 1;
     z-index: 3;
+    display: block;
+    overflow: hidden;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(62, 25, 0, 0.18);
     pointer-events: none;
 }
 
+#lefteye {
+    left: 64.62%;
+}
+
 #righteye {
+    left: 72.42%;
+}
+
+.mascot-pupil {
     position: absolute;
-    top: 39%;
-    left: 74%;
-    width: 2.5%;
-    height: auto;
-    z-index: 3;
-    pointer-events: none;
+    top: 44%;
+    left: 50%;
+    width: 33%;
+    aspect-ratio: 1;
+    display: block;
+    background: #050505;
+    border-radius: 50%;
+    transform: translate(calc(-50% + var(--eye-offset-x)), calc(-50% + var(--eye-offset-y)));
+    will-change: transform;
 }
 
 /* LOGIN FORM CSS STARTS HERE */

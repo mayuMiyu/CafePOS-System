@@ -9,14 +9,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="intro-running">
+    <div id="loginIntro" class="login-intro" aria-hidden="true">
+        <div class="intro-grain"></div>
+        <div class="intro-stage">
+            <div class="intro-logo-shell">
+                <img class="intro-logo intro-logo-image" src="assets/products/maku icon.png" alt="Maku Cafe logo">
+            </div>
+            <p class="intro-copy intro-copy-leisure">Coffee, served at your leisure</p>
+            <p class="intro-copy intro-copy-brand">Maku Cafe</p>
+        </div>
+    </div>
+
     <main>
         <div id="scene">
             <img id="background" src="assets/background.png" alt="Cafe background">
             <div id="donut-wrapper">
             <img id="donut" src="assets/assetscafe.png" alt="Donut">
-            <img id="lefteye" src="assets/assetscafe - eyes.png" alt="Left Eye">
-            <img id="righteye" src="assets/assetscafe - eyes.png" alt="Right Eye">
+            <span id="lefteye" class="mascot-eye" aria-hidden="true"><span class="mascot-pupil"></span></span>
+            <span id="righteye" class="mascot-eye" aria-hidden="true"><span class="mascot-pupil"></span></span>
             </div>
 
             <div id = "LoginForm">

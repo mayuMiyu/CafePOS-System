@@ -6,12 +6,10 @@ const loginIntro = document.getElementById('loginIntro');
 
 function finishLoginIntro() {
     document.body.classList.add('intro-revealing');
-
     setTimeout(() => {
         loginIntro?.classList.add('is-finished');
         document.body.classList.remove('intro-running');
     }, 720);
-
     setTimeout(() => {
         loginIntro?.remove();
         document.body.classList.remove('intro-revealing');
@@ -20,7 +18,6 @@ function finishLoginIntro() {
 
 if (loginIntro) {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (prefersReducedMotion) {
         finishLoginIntro();
     } else {
@@ -30,21 +27,16 @@ if (loginIntro) {
 
 const MAX_OFFSET = 2.6;
 
-//eye tracker
 document.addEventListener('mousemove', (event) => {
     if (!donut || !donutWrapper || !eyeLeft || !eyeRight) return;
-
     const rect = donut.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-
     const dx = event.clientX - cx;
     const dy = event.clientY - cy;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-
     const offsetX = (dx / dist) * MAX_OFFSET;
     const offsetY = (dy / dist) * MAX_OFFSET;
-
     donutWrapper.style.setProperty('--eye-offset-x', `${offsetX}px`);
     donutWrapper.style.setProperty('--eye-offset-y', `${offsetY}px`);
 });
@@ -54,10 +46,22 @@ document.addEventListener('mouseleave', () => {
     donutWrapper?.style.setProperty('--eye-offset-y', '0px');
 });
 
-//JSON data for login 
+// Toast
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        toast.addEventListener('animationend', () => toast.remove());
+    }, duration);
+}
+
+// Login
 document.querySelector('.form').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const username = document.querySelector('input[name="username"]').value.trim();
     const password = document.querySelector('input[name="password"]').value;
 
@@ -76,22 +80,19 @@ document.querySelector('.form').addEventListener('submit', async (e) => {
                 Manager: '/manager.html',
                 Kitchen: '/kitchen.html'
             };
-
             const role = data.user?.role || data.role;
             const redirectPath = roleRedirects[role];
             if (!redirectPath) {
-                alert('Account role is not supported.');
+                showToast('Account role is not supported.', 'error');
                 return;
             }
-
             window.location.href = redirectPath;
         } else {
-            alert(data.message);
+            showToast(data.message, 'error');
         }
-
     } catch (err) {
         console.error(err);
-        alert('Something went wrong. Please try again.');
+        showToast('Something went wrong. Please try again.', 'error');
     }
 });
 
@@ -105,18 +106,16 @@ document.querySelector('.form h5 a').addEventListener('click', (e) => {
 document.getElementById('closeRegister').addEventListener('click', () => {
     const card = document.getElementById('registerCard');
     card.style.animation = 'slideDownFade 0.3s ease forwards';
-    
     setTimeout(() => {
         document.getElementById('registerOverlay').classList.remove('active');
         card.style.animation = '';
     }, 300);
 });
 
-// Send verification code
+// Send verification code (register)
 document.getElementById('sendCodeBtn').addEventListener('click', async () => {
     const email = document.getElementById('reg-email').value;
-
-    if (!email) return alert('Please enter your email first');
+    if (!email) return showToast('Please enter your email first.', 'error');
 
     const btn = document.getElementById('sendCodeBtn');
     btn.disabled = true;
@@ -130,7 +129,7 @@ document.getElementById('sendCodeBtn').addEventListener('click', async () => {
         });
 
         const data = await res.json();
-        alert(data.message);
+        showToast(data.message, data.success ? 'success' : 'error');
 
         if (data.success) {
             let seconds = 60;
@@ -148,13 +147,13 @@ document.getElementById('sendCodeBtn').addEventListener('click', async () => {
             btn.textContent = 'Send Code';
         }
     } catch (err) {
-        alert('Failed to send code');
+        showToast('Failed to send code.', 'error');
         btn.disabled = false;
         btn.textContent = 'Send Code';
     }
 });
 
-// Register send data
+// Register
 document.getElementById('registerBtn').addEventListener('click', async () => {
     const username = document.getElementById('reg-username').value;
     const fullName = document.getElementById('reg-name').value;
@@ -163,24 +162,29 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     const code = document.getElementById('reg-code').value;
 
     if (!username || !password || !email || !code) {
-        return alert('Please fill in all fields');
+        return showToast('Please fill in all fields.', 'error');
     }
 
     try {
         const res = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, name:fullName, password, email, code })
+            body: JSON.stringify({ username, name: fullName, password, email, code })
         });
 
         const data = await res.json();
-        alert(data.message);
+        showToast(data.message, data.success ? 'success' : 'error');
 
         if (data.success) {
-            document.getElementById('registerOverlay').classList.remove('active');
+            const card = document.getElementById('registerCard');
+            card.style.animation = 'slideDownFade 0.3s ease forwards';
+            setTimeout(() => {
+                document.getElementById('registerOverlay').classList.remove('active');
+                card.style.animation = '';
+            }, 300);
         }
     } catch (err) {
-        alert('Registration failed. Please try again.');
+        showToast('Registration failed. Please try again.', 'error');
     }
 });
 
@@ -189,10 +193,8 @@ document.querySelector('.form h4 a').addEventListener('click', (e) => {
     e.preventDefault();
     const loginContent = document.getElementById('LoginFormContent');
     const forgotCard = document.getElementById('forgotCard');
-
     loginContent.style.opacity = '0';
     loginContent.style.pointerEvents = 'none';
-
     setTimeout(() => {
         forgotCard.style.opacity = '1';
         forgotCard.style.pointerEvents = 'all';
@@ -204,20 +206,18 @@ document.getElementById('backToLoginFromForgot').addEventListener('click', (e) =
     e.preventDefault();
     const loginContent = document.getElementById('LoginFormContent');
     const forgotCard = document.getElementById('forgotCard');
-
     forgotCard.style.opacity = '0';
     forgotCard.style.pointerEvents = 'none';
-
     setTimeout(() => {
         loginContent.style.opacity = '1';
         loginContent.style.pointerEvents = 'all';
     }, 400);
 });
 
-// Send code for forgot password
+// Send code (forgot password)
 document.getElementById('forgotSendCodeBtn').addEventListener('click', async () => {
     const email = document.getElementById('forgot-email').value;
-    if (!email) return alert('Please enter your email first');
+    if (!email) return showToast('Please enter your email first.', 'error');
 
     const btn = document.getElementById('forgotSendCodeBtn');
     btn.disabled = true;
@@ -231,7 +231,7 @@ document.getElementById('forgotSendCodeBtn').addEventListener('click', async () 
         });
 
         const data = await res.json();
-        alert(data.message);
+        showToast(data.message, data.success ? 'success' : 'error');
 
         if (data.success) {
             let seconds = 60;
@@ -249,7 +249,7 @@ document.getElementById('forgotSendCodeBtn').addEventListener('click', async () 
             btn.textContent = 'Send Code';
         }
     } catch (err) {
-        alert('Failed to send code');
+        showToast('Failed to send code.', 'error');
         btn.disabled = false;
         btn.textContent = 'Send Code';
     }
@@ -263,11 +263,11 @@ document.getElementById('resetPasswordBtn').addEventListener('click', async () =
     const confirmPassword = document.getElementById('forgot-confirmpassword').value;
 
     if (!email || !code || !newPassword || !confirmPassword) {
-        return alert('Please fill in all fields');
+        return showToast('Please fill in all fields.', 'error');
     }
 
     if (newPassword !== confirmPassword) {
-        return alert('Passwords do not match');
+        return showToast('Passwords do not match.', 'error');
     }
 
     try {
@@ -278,12 +278,12 @@ document.getElementById('resetPasswordBtn').addEventListener('click', async () =
         });
 
         const data = await res.json();
-        alert(data.message);
+        showToast(data.message, data.success ? 'success' : 'error');
 
         if (data.success) {
             document.getElementById('backToLoginFromForgot').click();
         }
     } catch (err) {
-        alert('Reset failed. Please try again.');
+        showToast('Reset failed. Please try again.', 'error');
     }
 });
